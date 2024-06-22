@@ -1,0 +1,24 @@
+﻿@{
+    ViewData["Title"] = "Students List";
+}
+@model IEnumerable<University.Models.Student>
+<table>
+    <caption>Студенты</caption>
+    <thead>
+        <td>ФИО</td>
+        <td>Дата рождения</td>
+        <td>Описание</td>
+        <td>Группа</td>
+    </thead>
+    @foreach (var student in Model)
+    {
+        <tr>
+            <td>@(@student.Surname + " " + @student.Name + " " + @student.Patronymic)</td>
+            <td>@student.DateOfBirth.ToString()</td>
+            <td class="table__col_description">@student.Description</td>
+            <td>@(@student.Group !=null ? @student.Group.Name:"Пусто")</td>
+        </tr>
+    }
+</table>
+
+

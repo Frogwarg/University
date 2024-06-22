@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>University - @ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/University.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav class="header__nav">
+                <p class="header__title">University</p>
+                <div class="header__login">
+                    <button type="submit" class="sign-up">Регистрация</button>
+                    <button type="submit" class="sign-in">Вход</button>
+                </div>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <div class="container">
+            <div class="main__categories">
+                <div class="main__category" onclick="window.location.href='/Home/Groups';">
+                    <img src="~/images/group.png" alt="Лого группы" class="category__img">
+                    <p class="category__text">Группы</p>
+                </div>
+                <div class="main__category" onclick="window.location.href='/Home/Students';">
+                    <img src="~/images/student.png" alt="Лого студента" class="category__img">
+                    <p class="category__text">Студенты</p>
+                </div>
+                <div class="main__category" onclick="window.location.href='/Home/Teachers';">
+                    <img src="~/images/teacher.png" alt="Лого учителя" class="category__img">
+                    <p class="category__text">Преподаватели</p>
+                </div>
+                <div class="main__category" onclick="window.location.href='/Home/Subjects';">
+                    <img src="~/images/subject.png" alt="Лого предмета" class="category__img">
+                    <p class="category__text">Предметы</p>
+                </div>
+            </div>
+            <div class="main__table">
+                @RenderBody()
+            </div>
+        </div>
+    </main>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

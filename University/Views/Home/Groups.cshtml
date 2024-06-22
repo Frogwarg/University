@@ -1,0 +1,24 @@
+﻿@{
+    ViewData["Title"] = "Groups List";
+}
+@model IEnumerable<University.Models.Group>
+<table>
+    <caption>Группы</caption>
+    <thead>
+        <td>Наименование группы</td>
+        <td>Описание</td>
+        <td>Курс</td>
+        <td>Куратор</td>
+    </thead>
+    @foreach (var group in Model)
+    {
+        <tr>
+            <td>@group.Name</td>
+            <td class="table__col_description">@group.Description</td>
+            <td>@(@group.Course!=null ? @group.Course.Name:"Пусто")</td>
+            <td>@(@group.Curator !=null ? (@group.Curator.Surname + " " + @group.Curator.Name[0] + ". " + @group.Curator.Patronymic[0]+". "):"Пусто")</td>
+        </tr>
+    }
+</table>
+
+

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav class="header__nav">
+                <p class="header__title">University</p>
+                <div class="header__login">
+                    <button type="submit" class="sign-up">Регистрация</button>
+                    <button type="submit" class="sign-in">Вход</button>
+                </div>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <div class="container">
+            <div class="main__categories" >
+                <div class="main__category" onclick="window.location.href='~/Home/Groups';">
+                    <img src="./University/wwwroot/images/group.png" alt="Лого группы" class="category__img">
+                    <p class="category__text">Группы</p>
+                </div>
+                <div class="main__category" onclick="window.location.href='~/Home/Students';">
+                    <img src="./University/wwwroot/images/student.png" alt="Лого студента" class="category__img">
+                    <p class="category__text">Студенты</p>
+                </div>
+                <div class="main__category" onclick="window.location.href='~/Home/Teachers';">
+                    <img src="./University/wwwroot/images/teacher.png" alt="Лого учителя" class="category__img">
+                    <p class="category__text">Преподаватели</p>
+                </div>
+                <div class="main__category" onclick="window.location.href='~/Home/Subjects';">
+                    <img src="./University/wwwroot/images/subject.png" alt="Лого предмета" class="category__img">
+                    <p class="category__text">Предметы</p>
+                </div>
+            </div>
+            <table>
+                <caption>Группы</caption>
+                <thead>
+                    <td>Наименование группы</td>
+                    <td>Описание</td>
+                    <td>Курс</td>
+                    <td>Куратор</td>
+                </thead>
+                <tr>
+                    <td>21ДРВШПИ</td>
+                    <td>Группа программистов</td>
+                    <td>3</td>
+                    <td>Ст. преп. Светлана Андронатий Георгиевна</td>
+                </tr>
+            </table>
+        </div>
+        
+    </main>
+</body>
+</html>
