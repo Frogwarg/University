@@ -10,6 +10,13 @@
 *.userosscache
 *.sln.docstates
 
+# Ignore specific file
+index.html
+styles.css
+
+# Ignore specific folder
+University/Migrations
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
@@ -361,3 +368,13 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/University/Migrations
+/University/Migrations/
+/University/Migrations/20240621153350_Initial.cs
+/University/Migrations/20240621160746_upd1.cs
+/University/Migrations/20240621163718_upd2.cs
+/University/Migrations/20240621164444_upd3.cs
+/University/Migrations/20240621190614_upd5.cs
+/University/Migrations/ApplicationContextModelSnapshot.cs
+index.html
+styles.css

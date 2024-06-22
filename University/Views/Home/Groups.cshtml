@@ -1,7 +1,25 @@
 ﻿@{
     ViewData["Title"] = "Groups List";
 }
-@model IEnumerable<University.Models.Group>
+@model University.Models.GroupsViewModel
+
+<form asp-action="SearchGroups" method="get">
+    <div>
+        <label>Название: </label>
+        <input type="text" name="searchTerm" placeholder="Название группы..." value="@Model.SearchTerm" />
+
+        <label>Курс: </label>
+        <select name="selectedCourse">
+            <option value="">Все курсы</option>
+            @foreach (var course in Model.UniqueCourses)
+            {
+                <option value="@course" selected="@(Model.SelectedCourse == course)">@course</option>
+            }
+        </select>
+        <input type="submit" value="Поиск" />
+    </div>
+</form>
+
 <table>
     <caption>Группы</caption>
     <thead>
@@ -10,14 +28,21 @@
         <td>Курс</td>
         <td>Куратор</td>
     </thead>
-    @foreach (var group in Model)
+    @if (Model.FilteredGroups != null && Model.FilteredGroups.Any())
     {
-        <tr>
-            <td>@group.Name</td>
-            <td class="table__col_description">@group.Description</td>
-            <td>@(@group.Course!=null ? @group.Course.Name:"Пусто")</td>
-            <td>@(@group.Curator !=null ? (@group.Curator.Surname + " " + @group.Curator.Name[0] + ". " + @group.Curator.Patronymic[0]+". "):"Пусто")</td>
-        </tr>
+        @foreach (var group in Model.FilteredGroups)
+        {
+            <tr>
+                <td>@group.Name</td>
+                <td class="table__col_description">@group.Description</td>
+                <td>@(@group.Course != null ? @group.Course.Name : "Пусто")</td>
+                <td>@(@group.Curator != null ? (@group.Curator.Surname + " " + @group.Curator.Name[0] + ". " + @group.Curator.Patronymic[0] + ". ") : "Пусто")</td>
+            </tr>
+        }
+    }
+    else
+    {
+        <tfoot><td  colspan="4">Результатов нет</td></tfoot>
     }
 </table>
 

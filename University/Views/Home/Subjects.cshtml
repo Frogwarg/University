@@ -1,17 +1,33 @@
 ﻿@{
     ViewData["Title"] = "Subjects List";
 }
-@model IEnumerable<University.Models.Subject>
+@model University.Models.SubjectsViewModel
+
+<form asp-action="SearchSubjects" method="get">
+    <div>
+        <label>Название: </label>
+        <input type="text" name="searchSubject" placeholder="Название предмета..." value="@Model.SearchSubject" />
+        <input type="submit" value="Поиск" />
+    </div>
+</form>
+
 <table>
     <caption>Предметы</caption>
     <thead>
         <td>Наименование предмета</td>
     </thead>
-    @foreach (var subject in Model)
+    @if (Model.FilteredSubjects != null && Model.FilteredSubjects.Any())
     {
-        <tr>
-            <td>@subject.Name</td>
-        </tr>
+        @foreach (var subject in Model.FilteredSubjects)
+        {
+            <tr>
+                <td>@subject.Name</td>
+            </tr>
+        }
+    }
+    else
+    {
+        <tfoot><td colspan="1">Результатов нет</td></tfoot>
     }
 </table>
 

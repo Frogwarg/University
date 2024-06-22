@@ -75,7 +75,6 @@ main>.container{
 }
 table{
     margin:0 auto;
-    margin-top:40px;
     border-spacing: 2px;
     background: black;
     text-align: center;
@@ -94,4 +93,11 @@ thead{
 }
 tbody{
     background:rgb(224, 223, 223);
+}
+form{
+    margin-top:40px;
+    width:100%;
+    height: 30px;
+    display:flex;
+    justify-content: center;
 }

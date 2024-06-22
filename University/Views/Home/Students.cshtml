@@ -1,7 +1,19 @@
 ﻿@{
     ViewData["Title"] = "Students List";
 }
-@model IEnumerable<University.Models.Student>
+@model University.Models.StudentsViewModel
+
+<form asp-action="SearchStudents" method="get">
+    <div>
+        <label>ФИО: </label>
+        <input type="text" name="searchFIO" placeholder="ФИО студента..." value="@Model.SearchFIO" />
+
+        <label>Группа: </label>
+        <input type="text" name="searchGroup" placeholder="Группа..." value="@Model.SearchGroup" />
+        <input type="submit" value="Поиск" />
+    </div>
+</form>
+
 <table>
     <caption>Студенты</caption>
     <thead>
@@ -10,15 +22,23 @@
         <td>Описание</td>
         <td>Группа</td>
     </thead>
-    @foreach (var student in Model)
+    @if (Model.FilteredStudents != null && Model.FilteredStudents.Any())
     {
-        <tr>
-            <td>@(@student.Surname + " " + @student.Name + " " + @student.Patronymic)</td>
-            <td>@student.DateOfBirth.ToString()</td>
-            <td class="table__col_description">@student.Description</td>
-            <td>@(@student.Group !=null ? @student.Group.Name:"Пусто")</td>
-        </tr>
+        @foreach (var student in Model.FilteredStudents)
+        {
+            <tr>
+                <td>@(@student.Surname + " " + @student.Name + " " + @student.Patronymic)</td>
+                <td>@student.DateOfBirth.ToString("dd-MM-yyyy")</td>
+                <td class="table__col_description">@student.Description</td>
+                <td>@(@student.Group != null ? @student.Group.Name : "Пусто")</td>
+            </tr>
+        }
     }
+    else
+    {
+        <tfoot><td colspan="4">Результатов нет</td></tfoot>
+    }
+    
 </table>
 
 

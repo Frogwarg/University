@@ -6,7 +6,7 @@
         public string Name { get; set; } = string.Empty;
         public string Surname { get; set; } = string.Empty;
         public string Patronymic { get; set; } = string.Empty;
-        public DateTime DateOfBirth { get; set; } = DateTime.MinValue;
+        public DateTimeOffset DateOfBirth { get; set; } = DateTimeOffset.MinValue;
         public string Description { get; set; } = string.Empty;
         public string Image { get; set; } = string.Empty;
         public Guid GroupId { get; set; }
