@@ -1,4 +1,6 @@
-﻿namespace University.Models
+﻿using System.Diagnostics;
+
+namespace University.Models
 {
     public class TeachersViewModel
     {
@@ -9,5 +11,6 @@
         public List<Subject> Subjects { get; set; } = new List<Subject> ();
         public Subject SelectedSubject { get; set; } = new Subject();
         public List<Teacher> FilteredTeachers { get; set; } = new List<Teacher>();
+        public Teacher? SelectedTeacher { get; set; }
     }
 }

@@ -27,10 +27,10 @@
         @foreach (var student in Model.FilteredStudents)
         {
             <tr>
-                <td>@(@student.Surname + " " + @student.Name + " " + @student.Patronymic)</td>
+                <td><a asp-action="SearchStudents" asp-controller="Home" asp-route-selectedStudent="@student.Name">@(@student.Surname + " " + @student.Name + " " + @student.Patronymic)</a></td>
                 <td>@student.DateOfBirth.ToString("dd-MM-yyyy")</td>
                 <td class="table__col_description">@student.Description</td>
-                <td>@(@student.Group != null ? @student.Group.Name : "Пусто")</td>
+                <td> <a asp-controller="Home" asp-action="SearchGroups" asp-route-searchTerm="@(@student.Group != null ? @student.Group.Name : "")"> @(@student.Group != null ? @student.Group.Name : "Пусто") </a></td>
             </tr>
         }
     }
@@ -38,7 +38,36 @@
     {
         <tfoot><td colspan="4">Результатов нет</td></tfoot>
     }
-    
 </table>
+@if (Model.SelectedStudent != null)
+{
+        Student student = Model.SelectedStudent;
+        <div class="profile">
+        <div class="profile__container">
+            <p class="profile__status">Информация о студенте</p>
+            <div class="profile__picture">
+                <img src="@student.ImagePath" alt="Фото профиля" class="profile__picture_image">
+            </div>
+            <div class="profile__name_container">
+                <p class="profile__name">Имя: @student.Name</p>
+            </div>
+            <div class="profile__surname_container">
+                <p class="profile__surname">Фамилия: @student.Surname</p>
+            </div>
+            <div class="profile__patronymic_container">
+                <p class="profile__patronymic">Отчество: @student.Patronymic</p>
+            </div>
+            <div class="profile__dateofbirth_container">
+                <p class="profile__dateofbirth">Дата рождения: @student.DateOfBirth.ToString("dd-MM-yyyy")</p>
+            </div>
+            <div class="profile__description_container">
+                <p class="profile__description">Описание: @student.Description</p>
+            </div>
+            <div class="profile__group_container">
+                <p class="profile__group">Группа: @student.Group.Name</p>
+            </div>
+        </div>
+    </div>
+}
 
 

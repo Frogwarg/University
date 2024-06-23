@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Diagnostics;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using University.Models;
 
 namespace University.Controllers
@@ -20,8 +18,9 @@ namespace University.Controllers
             db = context;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            await db.SaveChangesAsync();
             return View();
         }
         public async Task<IActionResult> Groups(string? selectedCourse, string searchTerm)
@@ -59,7 +58,7 @@ namespace University.Controllers
         }
 
 
-        public async Task<IActionResult> Students(string? searchFIO, string? searchGroup)
+        public async Task<IActionResult> Students(string? searchFIO, string? searchGroup, string? selectedStudent)
         {
             var students = await db.Students.Include(g => g.Group).ToListAsync();
             List<Student> filteredStudents = students;
@@ -80,19 +79,20 @@ namespace University.Controllers
                 Students = students,
                 SearchFIO= searchFIO,
                 SearchGroup= searchGroup,
-                FilteredStudents = filteredStudents
+                FilteredStudents = filteredStudents,
+                SelectedStudent=students.Find(g=>g.Name==selectedStudent)
             };
 
             return View("Students", model);
         }
         [HttpGet]
-        public async Task<IActionResult> SearchStudents(string? searchFIO, string? searchGroup)
+        public async Task<IActionResult> SearchStudents(string? searchFIO, string? searchGroup, string selectedStudent = null)
         {
-            return RedirectToAction("Students", new { searchFIO, searchGroup });
+            return RedirectToAction("Students", new { searchFIO, searchGroup, selectedStudent });
         }
 
 
-        public async Task<IActionResult> Teachers(string? searchFIO, string? selectedSubject, string? selectedDegree)
+        public async Task<IActionResult> Teachers(string? searchFIO, string? selectedSubject, string? selectedDegree, string? selectedTeacher)
         {
             var teachers = await db.Teachers.Include(g => g.Subjects).ToListAsync();
             List<string> uniqueDegrees = teachers.SelectMany(g => g.Degrees).Distinct().ToList();
@@ -114,6 +114,7 @@ namespace University.Controllers
                 filteredTeachers = filteredTeachers.Where(teacher => teacher.Subjects.Any(subject => subject.Name == selectedSubject)).ToList();
             }
             var subjects = await db.Subjects.ToListAsync();
+            Console.WriteLine("Имя учителя: "+ selectedTeacher);
             var model = new TeachersViewModel
             {
                 Teachers = teachers,
@@ -122,15 +123,16 @@ namespace University.Controllers
                 SelectedDegree=selectedDegree,
                 Subjects = subjects,
                 SelectedSubject=subjects.Find(g=>g.Name == selectedSubject),
-                FilteredTeachers = filteredTeachers
+                FilteredTeachers = filteredTeachers,
+                SelectedTeacher = teachers.Find(g=> g.Name == selectedTeacher)
             };
 
             return View("Teachers", model);
         }
         [HttpGet]
-        public async Task<IActionResult> SearchTeachers(string? searchFIO, string? selectedSubject, string? selectedDegree)
+        public async Task<IActionResult> SearchTeachers(string? searchFIO, string? selectedSubject, string? selectedDegree, string selectedTeacher = null)
         {
-            return RedirectToAction("Teachers", new { searchFIO, selectedSubject, selectedDegree });
+            return RedirectToAction("Teachers", new { searchFIO, selectedSubject, selectedDegree, selectedTeacher });
         }
 
 

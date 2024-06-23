@@ -25,6 +25,7 @@ namespace University
                 Surname = "Андронатий",
                 Patronymic = "Георгиевна",
                 DateOfBirth = new DateTimeOffset(1982, 12, 07, 0, 0, 0, TimeSpan.Zero),
+                Description="Хороший преподаватель",
                 Degrees = new List<string> { "Кандидат наук" },
                 Subjects = new List<Subject> { subj1, subj2 }
             };
@@ -35,6 +36,7 @@ namespace University
                 Surname = "Воля",
                 Patronymic = "Викторович",
                 DateOfBirth = new DateTimeOffset(1979, 04, 29, 0, 0, 0, TimeSpan.Zero),
+                Description="Берёт взятки. Надо бы уволить... но он хорошо преподаёт",
                 Degrees = new List<string> { "Ученый" },
                 Subjects = new List<Subject> { subj3, subj4, subj5 }
             };

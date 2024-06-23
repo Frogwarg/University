@@ -49,7 +49,7 @@
             degrees = "";
             subjects = "";
             <tr>
-                <td>@(@teacher.Surname + " " + @teacher.Name + " " + @teacher.Patronymic)</td>
+                <td><a asp-action="SearchTeachers" asp-controller="Home" asp-route-selectedTeacher="@teacher.Name">@(@teacher.Surname + " " + @teacher.Name + " " + @teacher.Patronymic)</a></td>
                 <td>@teacher.DateOfBirth.ToString("dd-MM-yyyy")</td>
 
                 @foreach (var degree in @teacher.Degrees)
@@ -87,5 +87,63 @@
         <tfoot><td colspan="5">Результатов нет</td></tfoot>
     }
 </table>
+@if (Model.SelectedTeacher != null)
+{
+    Teacher teacher = Model.SelectedTeacher;
+    <div class="profile">
+        <div class="profile__container">
+            <p class="profile__status">Информация о преподавателе</p>
+            <div class="profile__picture">
+                <img src="@teacher.ImagePath" alt="Фото профиля" class="profile__picture_image">
+            </div>
+            <div class="profile__name_container">
+                <p class="profile__name">Имя: @teacher.Name</p>
+            </div>
+            <div class="profile__surname_container">
+                <p class="profile__surname">Фамилия: @teacher.Surname</p>
+            </div>
+            <div class="profile__patronymic_container">
+                <p class="profile__patronymic">Отчество: @teacher.Patronymic</p>
+            </div>
+            <div class="profile__dateofbirth_container">
+                <p class="profile__dateofbirth">Дата рождения: @teacher.DateOfBirth.ToString("dd-MM-yyyy")</p>
+            </div>
+            <div class="profile__description_container">
+                <p class="profile__description">Описание: @teacher.Description</p>
+            </div>
+            <div class="profile__degree_container">
+                @{degrees="";}
+                @foreach (var degree in @teacher.Degrees)
+                {
+                    degrees += degree;
+                    if (@teacher.Degrees.IndexOf(degree) != @teacher.Degrees.Count - 1)
+                    {
+                        degrees += ", ";
+                    }
+                }
+                <p class="profile__degree">Степень: @degrees</p>
+            </div>
+            <div class="profile__subjects_container">
+                @{subjects="";}
+                @if (@teacher.Subjects != null)
+                {
+                    @foreach (var subject in @teacher.Subjects)
+                    {
+                        subjects += subject.Name;
+                        if (@teacher.Subjects.IndexOf(subject) != @teacher.Subjects.Count - 1)
+                        {
+                            subjects += ", ";
+                        }
+                    }
+                }
+                else
+                {
+                    subjects = "Нет";
+                }
+                <p class="profile__subjects">Ведёт предметы: @subjects</p>
+            </div>
+        </div>
+    </div>
+}
 
 

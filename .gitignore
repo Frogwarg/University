@@ -10,13 +10,6 @@
 *.userosscache
 *.sln.docstates
 
-# Ignore specific file
-index.html
-styles.css
-
-# Ignore specific folder
-University/Migrations
-
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
@@ -376,5 +369,5 @@ FodyWeavers.xsd
 /University/Migrations/20240621164444_upd3.cs
 /University/Migrations/20240621190614_upd5.cs
 /University/Migrations/ApplicationContextModelSnapshot.cs
-index.html
-styles.css
+/index.html
+/styles.css

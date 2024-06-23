@@ -6,5 +6,6 @@
         public string SearchFIO { get; set; } = string.Empty;
         public string SearchGroup { get; set; } = string.Empty;
         public List<Student> FilteredStudents { get; set; } = new List<Student>();
+        public Student? SelectedStudent { get; set; }
     }
 }

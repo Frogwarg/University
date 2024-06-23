@@ -4,8 +4,8 @@ using University;
 
 var builder = WebApplication.CreateBuilder(args);
 
-string connection = "Host=localhost;Port=5432;Database=UniversityDB;Username=postgres;Password=danik";
-builder.Services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(connection));
+//string connection = "Host=localhost;Port=5432;Database=UniversityDB;Username=postgres;Password=danik";
+builder.Services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

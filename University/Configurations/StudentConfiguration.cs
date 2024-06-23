@@ -15,7 +15,7 @@ namespace University.Configurations
             builder.Property(s => s.Patronymic).HasMaxLength(100);
             builder.Property(s => s.DateOfBirth).IsRequired();
             builder.Property(s => s.Description).HasMaxLength(1000);
-            builder.Property(s => s.Image).HasMaxLength(250);
+            builder.Property(s => s.ImagePath).HasMaxLength(250);
 
             builder.HasOne(s => s.Group)
                 .WithMany(g => g.Students)

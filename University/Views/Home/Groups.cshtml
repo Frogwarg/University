@@ -27,6 +27,7 @@
         <td>Описание</td>
         <td>Курс</td>
         <td>Куратор</td>
+        <td>Студенты</td>
     </thead>
     @if (Model.FilteredGroups != null && Model.FilteredGroups.Any())
     {
@@ -36,13 +37,14 @@
                 <td>@group.Name</td>
                 <td class="table__col_description">@group.Description</td>
                 <td>@(@group.Course != null ? @group.Course.Name : "Пусто")</td>
-                <td>@(@group.Curator != null ? (@group.Curator.Surname + " " + @group.Curator.Name[0] + ". " + @group.Curator.Patronymic[0] + ". ") : "Пусто")</td>
+                <td><a asp-controller="Home" asp-action="SearchTeachers" asp-route-searchFIO="@(@group.Curator != null ? @group.Curator.Surname :"")">@(@group.Curator != null ? (@group.Curator.Surname + " " + @group.Curator.Name[0] + ". " + @group.Curator.Patronymic[0] + ". ") : "Пусто")</a></td>
+                <td><a asp-controller="Home" asp-action="SearchStudents" asp-route-searchGroup="@group.Name">Просмотреть &#9660;</a></td>
             </tr>
         }
     }
     else
     {
-        <tfoot><td  colspan="4">Результатов нет</td></tfoot>
+        <tfoot><td  colspan="5">Результатов нет</td></tfoot>
     }
 </table>
 

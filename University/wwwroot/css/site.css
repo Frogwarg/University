@@ -30,6 +30,7 @@ header {
     font-weight: bolder;
     font-size: 30px;
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    text-decoration:none;
 }
 
 .header__login > button {
@@ -83,6 +84,14 @@ main {
     cursor: pointer;
 }
 
+form {
+    margin-top: 40px;
+    width: 100%;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+}
+
 table {
     margin: 0 auto;
     border-spacing: 2px;
@@ -105,15 +114,61 @@ thead {
 }
 .table__col_description{
     text-align:start;
+    max-width:200px;
+    word-wrap:break-word;
 }
 
 tbody,tfoot {
     background: rgb(224, 223, 223);
 }
-form {
-    margin-top: 40px;
-    width: 100%;
-    height: 30px;
+a:visited{
+    text-decoration:none;
+}
+a{
+    color:black;
+}
+.profile {
+    margin-top: 30px;
     display: flex;
     justify-content: center;
+    height: fit-content;
+}
+
+.profile__container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 780px;
+    height: 1000px;
+}
+
+.profile__status {
+    justify-self: center;
+    height: 20px;
+    margin: 0;
+    font-size: 20px;
+    font-weight: 300;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+.profile__container > div:not(.profile__status,.profile__picture) {
+    align-self: flex-start;
+    height: 20px;
+    margin-top: 10px;
+}
+
+.profile__picture {
+    width: fit-content;
+    height: fit-content;
+    max-width:200px;
+    max-height:200px;
+    display: grid;
+    place-content: center;
+    border: 1px solid black;
+    margin-top: 10px;
+}
+
+.profile__picture_image {
+    width: 100%;
+    height: 100%;
 }
