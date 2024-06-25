@@ -13,7 +13,7 @@
             <option value="">Все курсы</option>
             @foreach (var course in Model.UniqueCourses)
             {
-                <option value="@course" selected="@(Model.SelectedCourse == course)">@course</option>
+                <option value="@course" selected="@(Model.SelectedCourse == course)">@course.Name</option>
             }
         </select>
         <input type="submit" value="Поиск" />
@@ -60,28 +60,47 @@
     }
 </table>
 <div class="add__button_container">
-    <button type="button" id="add__button" class="add__button">+Добавить группу</button>
+    <button type="button" id="add__button" class="add__button">+Добавить</button>
 </div>
 
 <div class="create__container" style="display: none;">
-    <form action="CreateGroup" method="post">
+    <form class="create__form" action="CreateGroup" method="post">
         <p class="create__name">Наименование группы: </p>
         <input name="createName" placeholder="Наименование..." required>
         <p class="create__description">Описание:</p>
         <input name="createDesc" placeholder="Описание...">
         <p class="create__course">Курс:</p>
-        <select name="createCourse" id="" required>
-            <option value="3">3</option>
-            <option value="4">4</option>
-        </select>
-        <p class="create__teacher">Куратор: </p>
-        <select name="createCurator" id="" required>
-            @foreach (var teacher in Model.Teachers)
-            {
-                <option value="@teacher">@(@teacher.Surname+" "+teacher.Name+" "+teacher.Patronymic)</option>
-            }
-        </select>
-        <input class="create__btn" type="submit" value="Создать группу">
+        @if (Model.UniqueCourses.Count != 0)
+        {
+            <select name="createCourse" id="" required>
+                @foreach (var course in Model.UniqueCourses)
+                {
+                    <option value="@course.Id">@course.Name</option>
+                }
+            </select>
+        }
+        else
+        {
+            <button type="button" class="create__course" onclick="location.href='@Url.Action("Courses", "Home")'">Создать курс</button>
+        }
+        <p class="create__teacher">Куратор (свободный): </p>
+        @{
+            List<Teacher> freeTeachers = Model.Teachers.Where(t => t.Group == null).ToList();
+        }
+        @if (@freeTeachers.Count != 0)
+        {
+            <select name="createCurator" id="" required>
+                @foreach (var teacher in Model.Teachers.Where(t => t.Group == null))
+                {
+                    <option value="@teacher.Id">@(@teacher.Surname + " " + teacher.Name + " " + teacher.Patronymic)</option>
+                }
+            </select>
+            <input class="create__btn" type="submit" value="Создать группу">
+        }
+        else
+        {
+            <button type="button" class="create__teacher" onclick="location.href='@Url.Action("Teachers", "Home")'">Добавить преподавателя</button>
+        }
     </form>
 </div>
 

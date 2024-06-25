@@ -11,7 +11,17 @@
         <div class="profile__container">
             <p class="profile__status">Информация о преподавателе</p>
             <div class="profile__picture">
-                <img src="@teacher.ImagePath" alt="Фото профиля" class="profile__picture_image">
+                @{
+                    string filePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", teacher.ImagePath.TrimStart('/'));
+                }
+                @if (System.IO.File.Exists(@filePath))
+                {
+                    <img src="@teacher.ImagePath" alt="Фото профиля" class="profile__picture_image">
+                }
+                else
+                {
+                    <img src="/images/default_empty.jpg" alt="Фото профиля отсутствует" class="profile__picture_image">
+                }
             </div>
             <div class="profile__name_container">
                 <p class="profile__name">Имя: @teacher.Name</p>
@@ -120,7 +130,7 @@ else
                             degrees += ", ";
                         }
                     }
-                    <td>@(!string.IsNullOrEmpty(degrees) ? degrees : "Пусто")</td>
+                    <td class="table__col_degrees">@(!string.IsNullOrEmpty(degrees) ? degrees : "Пусто")</td>
                     <td class="table__col_description">@teacher.Description</td>
                     @if (teacher.Subjects != null)
                     {
@@ -133,7 +143,7 @@ else
                             }
                         }
                     }
-                    <td>@(!string.IsNullOrEmpty(subjects) ? subjects : "Пусто")</td>
+                    <td class="table__col_subjects">@(!string.IsNullOrEmpty(subjects) ? subjects : "Пусто")</td>
                     <td><a href="#">Изменить</a></td>
                     <td><a asp-action="DeleteTeacher" asp-controller="Home" asp-route-TeacherID="@teacher.Id">Удалить</a></td>
                 </tr>
@@ -146,8 +156,61 @@ else
         }
     </table>
     <div class="add__button_container">
-        <button type="button" class="add__button">+Добавить преподавателя</button>
+        <button type="button" id="add__button" class="add__button">+Добавить</button>
     </div>
-}
+
+    <div class="create__container" style="display: none;">
+        <form class="create__form" action="CreateTeacher" method="post" enctype="multipart/form-data">
+            <p class="create__name">Имя: </p>
+            <input name="createName" placeholder="Имя..." required>
+            <p class="create__surname">Фамилия:</p>
+            <input name="createSurname" placeholder="Фамилия..." required>
+            <p class="create__patronymic">Отчество (если есть):</p>
+            <input name="createPatronymic" placeholder="Отчество...">
+            <p class="create__dateOfBirth">Дата рождения:</p>
+            <input type="date" id="createDateOfBirth" name="createDateOfBirth" placeholder="Дата рождения..." required>
+            <p class="create__degrees">Степени (если есть):</p>
+            <input type="text" name="createDegrees" placeholder="Степени...">
+            <p class="create__description">Описание:</p>
+            <input name="createDesc" placeholder="Описание...">
+            <p class="create__photo">Фотография:</p>
+            <input type="file" name="createImage" placeholder="Фото...">
+            <p class="create__subjects">Предметы:</p>
+            @if(Model.Subjects.Count != 0)
+            {
+                <div class="create__subjects_container">
+                    @foreach (var subject in Model.Subjects)
+                    {
+                        <div class="create__subjects_item">
+                            <input type="checkbox" name="SelectedSubjects" value="@subject.Id" />
+                            <label>@subject.Name</label>
+                            <input type="hidden" name="SelectedSubjects.Index" value="@subject.Id" />
+                        </div>
+                    }
+                </div>
+            }
+            <input class="create__btn" type="submit" value="Добавить преподавателя">
+        </form>
+    </div>
+}<script>
+     function checkImageFile(file) {
+         const allowedExtensions = /(\.jpg|\.jpeg|\.png)$/i;
+
+         const extension = '.' + file.name.split('.').pop();
+
+         if (!allowedExtensions.exec(extension)) {
+             alert('Выбранный файл не является изображением. Выберите файл с расширением .jpg, .jpeg или .png.');
+             return false;
+         }
+         return true;
+     }
+
+     document.querySelector('input[type="file"]').addEventListener('change', () => {
+         const file = this.files[0];
+         if (file && !checkImageFile(file)) {
+             this.value = '';
+         }
+     });
+</script>
 
 

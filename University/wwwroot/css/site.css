@@ -1,5 +1,8 @@
 body {
-    display: block;
+    display: flex;
+    flex-direction:column;
+    justify-content:space-between;
+    min-height:100vh;
     margin: 0;
     overflow: visible;
     background-color: #f7f7f7;
@@ -55,7 +58,8 @@ header {
 }
 
 main {
-    max-height: 1000px;
+    min-height:70vh;
+    flex:1;
 }
 
 .main__categories {
@@ -112,17 +116,17 @@ thead {
     background: rgb(104, 103, 103);
     color: #fff;
 }
-.table__col_description{
-    text-align:start;
-    max-width:200px;
-    word-wrap:break-word;
+.table__col_description, .table__col_degrees, .table__col_subjects {
+    text-align: start;
+    max-width: 200px;
+    word-wrap: break-word;
 }
 
 tbody,tfoot {
     background: rgb(224, 223, 223);
 }
-a:visited{
-    text-decoration:none;
+a:visited {
+    text-decoration: none;
 }
 a{
     color:black;
@@ -186,27 +190,47 @@ a{
     margin-top: 40px;
 }
 
-    .create__container > form {
+    .create__container > .create__form {
         display: grid;
         grid-template-columns: auto auto;
         column-gap: 30px;
         row-gap: 10px;
     }
 
-        .create__container > form > p {
+        .create__container > .create__form > p {
             grid-column: 1;
             margin: auto 0;
         }
 
-        .create__container > form > input:not(.create__btn), .create__container > form > select:not(.create__btn) {
+        .create__container > .create__form > input:not(.create__btn), .create__container > .create__form > select:not(.create__btn) {
             grid-column: 2;
             height: 25px;
         }
 
+.create__subjects_container{
+    grid-column:2;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    align-items:stretch;
+}
+.create__subjects_item{
+    display:flex;
+}
 .create__btn {
-    width: 120px;
+    width: fit-content;
     height: 20px;
     justify-self: center;
     grid-column: span 2;
     margin-top: 20px;
+}
+footer {
+    display: flex;
+    min-height: 100px;
+    align-items:center;
+    padding-left: 100px;
+    justify-self:flex-end;
+}
+footer>.container{
+    margin:0;
 }

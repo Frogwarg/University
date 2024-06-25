@@ -9,7 +9,17 @@
         <div class="profile__container">
             <p class="profile__status">Информация о студенте</p>
             <div class="profile__picture">
-                <img src="@student.ImagePath" alt="Фото профиля" class="profile__picture_image">
+                @{
+                    string filePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", student.ImagePath.TrimStart('/'));
+                }
+                @if (System.IO.File.Exists(@filePath))
+                {
+                    <img src="@student.ImagePath" alt="Фото профиля" class="profile__picture_image">
+                }
+                else
+                {
+                    <img src="/images/default_empty.jpg" alt="Фото профиля отсутствует" class="profile__picture_image">
+                }
             </div>
             <div class="profile__name_container">
                 <p class="profile__name">Имя: @student.Name</p>
@@ -62,7 +72,14 @@ else
                     <td><a target="_blank" asp-action="SearchStudents" asp-controller="Home" asp-route-selectedStudent="@student.Name">@(@student.Surname + " " + @student.Name + " " + @student.Patronymic)</a></td>
                     <td>@student.DateOfBirth.ToString("dd-MM-yyyy")</td>
                     <td class="table__col_description">@student.Description</td>
-                    <td> <a asp-controller="Home" asp-action="SearchGroups" asp-route-searchTerm="@(@student.Group != null ? @student.Group.Name : "")"> @(@student.Group != null ? @student.Group.Name : "Пусто") </a></td>
+                    @if (student.Group != null)
+                    {
+                        <td> <a asp-controller="Home" asp-action="SearchGroups" asp-route-searchTerm="@student.Group.Name"> @student.Group.Name </a></td>
+                    }
+                    else
+                    {
+                        <td>Пусто</td>
+                    }
                     <td><a href="#">Изменить</a></td>
                     <td><a asp-action="DeleteStudent" asp-controller="Home" asp-route-StudentID="@student.Id">Удалить</a></td>
                 </tr>
@@ -75,8 +92,60 @@ else
         }
     </table>
     <div class="add__button_container">
-        <button type="button" class="add__button">+Добавить студента</button>
+        <button type="button" id="add__button" class="add__button">+Добавить</button>
+    </div>
+
+    <div class="create__container" style="display: none;">
+        <form class="create__form" action="CreateStudent" method="post" enctype="multipart/form-data">
+            <p class="create__name">Имя: </p>
+            <input name="createName" placeholder="Имя..." required>
+            <p class="create__surname">Фамилия:</p>
+            <input name="createSurname" placeholder="Фамилия..." required>
+            <p class="create__patronymic">Отчество (если есть):</p>
+            <input name="createPatronymic" placeholder="Отчество...">
+            <p class="create__dateOfBirth">Дата рождения:</p>
+            <input type="date" id="createDateOfBirth" name="createDateOfBirth" placeholder="Дата рождения..." required>
+            <p class="create__description">Описание:</p>
+            <input name="createDesc" placeholder="Описание...">
+            <p class="create__photo">Фотография:</p>
+            <input type="file" name="createImage" placeholder="Фото...">
+            <p class="create__subjects">Группа:</p>
+            @if (Model.Groups.Count != 0)
+            {
+                <select name="selectedGroup" class="create__groups_container">
+                    <option value="">Не выбрано</option>
+                    @foreach (var group in Model.Groups)
+                    {
+                        <option value="@group.Id">@group.Name</option>
+                    }
+                </select>
+            }
+            else
+            {
+                <label>Групп нет</label>
+            }
+            <input class="create__btn" type="submit" value="Добавить студента">
+        </form>
     </div>
 }
+<script>
+     function checkImageFile(file) {
+         const allowedExtensions = /(\.jpg|\.jpeg|\.png)$/i;
 
+         const extension = '.' + file.name.split('.').pop();
+
+         if (!allowedExtensions.exec(extension)) {
+             alert('Выбранный файл не является изображением. Выберите файл с расширением .jpg, .jpeg или .png.');
+             return false;
+         }
+         return true;
+     }
+
+     document.querySelector('input[type="file"]').addEventListener('change', () => {
+         const file = this.files[0];
+         if (file && !checkImageFile(file)) {
+             this.value = '';
+         }
+     });
+</script>
 

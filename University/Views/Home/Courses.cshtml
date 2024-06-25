@@ -37,5 +37,15 @@
     }
 </table>
 <div class="add__button_container">
-    <button type="button" class="add__button">+Добавить курс</button>
+    <button type="button" id="add__button" class="add__button">+Добавить</button>
+</div>
+
+<div class="create__container" style="display: none;">
+    <form class="create__form" action="CreateCourse" method="post">
+        <p class="create__name">Наименование курса: </p>
+        <input name="createName" placeholder="Наименование..." required>
+        <p class="create__description">Описание:</p>
+        <input name="createDesc" placeholder="Описание...">
+        <input class="create__btn" type="submit" value="Создать курс">
+    </form>
 </div>

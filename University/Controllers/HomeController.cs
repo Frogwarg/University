@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using University.Models;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace University.Controllers
 {
@@ -50,6 +51,19 @@ namespace University.Controllers
         {
             return RedirectToAction("Courses", new { searchCourse });
         }
+        [HttpPost]
+        public async Task<IActionResult> CreateCourse(string? createName, string? createDesc)
+        {
+
+            Course newCourse = new Course
+            {
+                Name = createName,
+                Description=createDesc
+            };
+            await db.Courses.AddAsync(newCourse);
+            await db.SaveChangesAsync();
+            return RedirectToAction("Courses");
+        }
         public async Task<IActionResult> DeleteCourse(Guid CourseID)
         {
             var course = await db.Courses.FindAsync(CourseID);
@@ -62,15 +76,27 @@ namespace University.Controllers
         }
 
 
-        public async Task<IActionResult> Groups(string? selectedCourse, string searchTerm)
+        public async Task<IActionResult> Groups(Course? selectedCourse, string searchTerm)
         {
             var groups = await db.Groups.Include(g => g.Course).Include(g => g.Curator).ToListAsync();
-            var uniqueCourses = groups.Select(g => g.Course.Name).Distinct().ToList();
+
+            var uniqueNames = new HashSet<string>();
+            var uniqueCourses = new List<Course>();
+
+            foreach (var course in db.Courses)
+            {
+                if (uniqueNames.Add(course.Name))
+                {
+                    uniqueCourses.Add(course);
+                }
+            }
+
             List<Group> filteredGroups = groups;
 
-            if (!string.IsNullOrEmpty(selectedCourse))
+            if (selectedCourse !=null && !string.IsNullOrEmpty(selectedCourse.Name))
             {
-                filteredGroups = filteredGroups.Where(g => g.Course.Name == selectedCourse).ToList();
+                Console.WriteLine("SelectedCourse.Name: " + selectedCourse.Name);
+                filteredGroups = filteredGroups.Where(g => g.Course.Name == selectedCourse.Name).ToList();
             }
 
             if (!string.IsNullOrEmpty(searchTerm))
@@ -92,19 +118,22 @@ namespace University.Controllers
             return View("Groups", model);
         }
         [HttpGet]
-        public async Task<IActionResult> SearchGroups(string? selectedCourse, string searchTerm)
+        public async Task<IActionResult> SearchGroups(Course? selectedCourse, string searchTerm)
         {
             return RedirectToAction("Groups", new { selectedCourse, searchTerm });
         }
         [HttpPost]
-        public async Task<IActionResult> CreateGroup(string? createName, string? createCourse, Teacher? createCurator, string createDesc="")
+        public async Task<IActionResult> CreateGroup(string? createName, Guid createCourse, Guid createCurator, string createDesc="")
         {
+            Console.WriteLine("Создание группы --------------------------------------------------------------------------------------------");
             Group newGroup = new Group
             {
                 Name = createName,
                 Description = createDesc,
-                Course = new Course(),
-                Curator = createCurator
+                CourseId=(createCourse!=null && createCourse != Guid.Empty ? createCourse : null),
+                Course = (createCourse != null && createCourse != Guid.Empty ? await db.Courses.FindAsync(createCourse) : null),
+                CuratorId = (createCurator != null && createCurator != Guid.Empty) ? createCurator : null,
+                Curator = (createCurator!=null && createCurator != Guid.Empty) ?  await db.Teachers.FindAsync(createCurator): null
             };
             await db.Groups.AddAsync(newGroup);
             await db.SaveChangesAsync();
@@ -135,18 +164,18 @@ namespace University.Controllers
             if (!string.IsNullOrEmpty(searchGroup))
             {
                 searchGroup = searchGroup.ToLower();
-                filteredStudents = filteredStudents.Where(g => g.Group.Name.ToLower().Contains(searchGroup)).ToList();
+                filteredStudents = filteredStudents.Where(g => g.Group !=null && g.Group.Name.ToLower().Contains(searchGroup)).ToList();
             }
 
             var model = new StudentsViewModel
             {
                 Students = students,
-                SearchFIO= searchFIO,
-                SearchGroup= searchGroup,
+                SearchFIO = searchFIO,
+                SearchGroup = searchGroup,
                 FilteredStudents = filteredStudents,
-                SelectedStudent=students.Find(g=>g.Name==selectedStudent)
+                SelectedStudent = students.Find(g => g.Name == selectedStudent),
+                Groups = await db.Groups.Include(g => g.Course).Include(g => g.Curator).ToListAsync()
             };
-
             return View("Students", model);
         }
         [HttpGet]
@@ -154,11 +183,53 @@ namespace University.Controllers
         {
             return RedirectToAction("Students", new { searchFIO, searchGroup, selectedStudent });
         }
+        [HttpPost]
+        public async Task<IActionResult> CreateStudent(string? createName, string? createSurname, string? createPatronymic, DateTime createDateOfBirth, string? createDesc, IFormFile createImage, Guid selectedGroup)
+        {
+            Guid newID = Guid.NewGuid();
+            Group group = await db.Groups.FindAsync(selectedGroup);
+            Student newStudent = new Student
+            {
+                Id = newID,
+                Name = createName,
+                Surname = createSurname,
+                Patronymic = createPatronymic,
+                DateOfBirth = new DateTimeOffset(DateTime.SpecifyKind(createDateOfBirth, DateTimeKind.Utc)),
+                Description = createDesc
+            };
+            if (group != null) newStudent.Group = group;
+            if (createImage != null && createImage.Length > 0)
+            {
+                string fileName = $"{newID}{Path.GetExtension(createImage.FileName)}";
+                string filePath = Path.Combine("wwwroot/images/Profiles/Students", fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await createImage.CopyToAsync(stream);
+                }
+                newStudent.ImagePath = $"/images/Profiles/Students/{fileName}";
+            }
+
+
+            await db.Students.AddAsync(newStudent);
+            await db.SaveChangesAsync();
+            return RedirectToAction("Students");
+        }
         public async Task<IActionResult> DeleteStudent(Guid StudentID)
         {
             var student = await db.Students.FindAsync(StudentID);
             if (student != null)
             {
+                if (!string.IsNullOrEmpty(student.ImagePath))
+                {
+                    string filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", student.ImagePath.TrimStart('/'));
+
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        System.IO.File.Delete(filePath);
+                    }
+                }
+
                 db.Students.Remove(student);
                 await db.SaveChangesAsync();
             }
@@ -207,11 +278,69 @@ namespace University.Controllers
         {
             return RedirectToAction("Teachers", new { searchFIO, selectedSubject, selectedDegree, selectedTeacher });
         }
+        [HttpPost]
+        public async Task<IActionResult> CreateTeacher(string? createName, string? createSurname, string? createPatronymic, DateTime createDateOfBirth, string? createDegrees, string? createDesc, IFormFile createImage, List<Guid> SelectedSubjects)
+        {
+            List<string> degrees = new List<string>();
+            if (!string.IsNullOrEmpty(createDegrees))
+            {
+                degrees = createDegrees.Split(",").ToList();
+                foreach(string degree in degrees)
+                {
+                    degree.Trim();
+                }
+            }
+            List<Subject> subjects = new List<Subject>();
+            if (SelectedSubjects.Count != 0)
+            {
+                foreach (var subject in SelectedSubjects)
+                {
+                    subjects.Add(await db.Subjects.FindAsync(subject));
+                }
+            }
+            Guid newID = Guid.NewGuid();
+            Teacher newTeacher = new Teacher
+            {
+                Id=newID,
+                Name = createName,
+                Surname = createSurname,
+                Patronymic = createPatronymic,
+                DateOfBirth = new DateTimeOffset(DateTime.SpecifyKind(createDateOfBirth, DateTimeKind.Utc)),
+                Degrees = degrees,
+                Description = createDesc,
+                Subjects = subjects
+            };
+            if (createImage != null && createImage.Length > 0)
+            {
+                string fileName = $"{newID}{Path.GetExtension(createImage.FileName)}";
+                string filePath = Path.Combine("wwwroot/images/Profiles/Teachers", fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await createImage.CopyToAsync(stream);
+                }
+                newTeacher.ImagePath = $"/images/Profiles/Teachers/{fileName}";
+            }
+
+
+            await db.Teachers.AddAsync(newTeacher);
+            await db.SaveChangesAsync();
+            return RedirectToAction("Teachers");
+        }
         public async Task<IActionResult> DeleteTeacher(Guid TeacherID)
         {
             var teacher = await db.Teachers.FindAsync(TeacherID);
             if (teacher != null)
             {
+                if (!string.IsNullOrEmpty(teacher.ImagePath))
+                {
+                    string filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", teacher.ImagePath.TrimStart('/'));
+
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        System.IO.File.Delete(filePath);
+                    }
+                }
                 db.Teachers.Remove(teacher);
                 await db.SaveChangesAsync();
             }
@@ -244,6 +373,18 @@ namespace University.Controllers
         {
             return RedirectToAction("Subjects", new { searchSubject});
         }
+        [HttpPost]
+        public async Task<IActionResult> CreateSubject(string? createName)
+        {
+
+            Subject newSubject = new Subject
+            {
+                Name = createName
+            };
+            await db.Subjects.AddAsync(newSubject);
+            await db.SaveChangesAsync();
+            return RedirectToAction("Subjects");
+        }
         public async Task<IActionResult> DeleteSubject(Guid SubjectID)
         {
             var subject = await db.Subjects.FindAsync(SubjectID);
@@ -253,6 +394,12 @@ namespace University.Controllers
                 await db.SaveChangesAsync();
             }
             return RedirectToAction("Subjects");
+        }
+        [HttpGet]
+        public IActionResult VerifySubjectName(string createName)
+        {
+            var isUnique = !db.Subjects.Any(t => t.Name == createName);
+            return Json(isUnique);
         }
 
 
