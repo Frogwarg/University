@@ -17,23 +17,22 @@ namespace University.Configurations
             builder.Property(t => t.Description).HasMaxLength(1000);
             builder.Property(t => t.ImagePath).HasMaxLength(250);
 
+            builder.HasIndex(t => t.Name);
+            builder.HasIndex(t => t.Surname);
+            builder.HasIndex(t => t.Patronymic);
+            builder.HasIndex(t => t.DateOfBirth);
+
             builder.HasMany(t => t.Subjects)
-                .WithMany(s => s.Teachers);
+                .WithMany(s => s.Teachers)
+                .UsingEntity<Dictionary<string, object>>(
+                "TeacherSubject",
+                j => j.HasOne<Subject>().WithMany().HasForeignKey("SubjectId"),
+                j => j.HasOne<Teacher>().WithMany().HasForeignKey("TeacherId"));
 
             builder.HasOne(t => t.Group)
                 .WithOne(g => g.Curator)
-                .HasForeignKey<Group>(g => g.CuratorId);
-            //builder.HasKey(t => t.Id);
-
-            //builder
-            //    .HasMany(s => s.Subjects)
-            //    .WithMany(s => s.Teachers)
-            //    .UsingEntity(j => j.ToTable("TeacherSubjects"));
-
-            ////builder
-            ////    .HasOne(s => s.Group)
-            ////    .WithOne(g => g.Curator)
-            ////    .HasForeignKey<Teacher>(t => t.GroupId);
+                .HasForeignKey<Group>(g => g.CuratorId)
+                .OnDelete(DeleteBehavior.SetNull);
 
         }
     }

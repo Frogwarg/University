@@ -21,28 +21,12 @@ namespace University.Configurations
             builder.HasOne(g => g.Curator)
                 .WithOne(t => t.Group)
                 .HasForeignKey<Group>(g => g.CuratorId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasMany(g => g.Students)
                 .WithOne(s => s.Group)
                 .HasForeignKey(s => s.GroupId)
-                .OnDelete(DeleteBehavior.Restrict);
-            //builder.HasKey(t => t.Id);
-
-            //builder
-            //    .HasMany(g => g.Students)
-            //    .WithOne(s => s.Group)
-            //    .HasForeignKey(s => s.GroupId);
-
-            //builder
-            //    .HasOne(s => s.Course)
-            //    .WithMany(g => g.Groups)
-            //    .HasForeignKey(g=>g.Course);
-
-            //builder
-            //    .HasOne(s => s.Curator)
-            //    .WithOne(g=>g.Group)
-            //    .HasForeignKey<Group>(g => g.CuratorId);
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

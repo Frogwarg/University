@@ -1,0 +1,41 @@
+﻿@{
+    ViewData["Title"] = "Courses List";
+}
+@model University.Models.CoursesViewModel
+
+<form class="filter__form" asp-action="SearchCourses" method="get">
+    <div>
+        <label>Название: </label>
+        <input type="text" name="searchCourse" placeholder="Название курса..." value="@Model.SearchCourse" />
+        <input type="submit" value="Поиск" />
+    </div>
+</form>
+
+<table>
+    <caption>Курсы</caption>
+    <thead>
+    <td>Наименование</td>
+    <td>Описание</td>
+    <td colspan="2">Действия</td>
+    </thead>
+    @if (Model.FilteredCourses != null && Model.FilteredCourses.Any())
+    {
+        @foreach (var course in Model.FilteredCourses)
+        {
+            <tr>
+                <td>@course.Name</td>
+                <td class="table__col_description">@course.Description</td>
+                <td><a href="#">Изменить</a></td>
+                <td><a asp-action="DeleteCourse" asp-controller="Home" asp-route-CourseID="@course.Id">Удалить</a></td>
+            </tr>
+        }
+    }
+    else
+    {
+        <tfoot>
+        <td colspan="3">Результатов нет</td></tfoot>
+    }
+</table>
+<div class="add__button_container">
+    <button type="button" class="add__button">+Добавить курс</button>
+</div>

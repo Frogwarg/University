@@ -17,15 +17,15 @@ namespace University.Configurations
             builder.Property(s => s.Description).HasMaxLength(1000);
             builder.Property(s => s.ImagePath).HasMaxLength(250);
 
+            builder.HasIndex(s => s.Name);
+            builder.HasIndex(s => s.Surname);
+            builder.HasIndex(s => s.Patronymic);
+            builder.HasIndex(s => s.DateOfBirth);
+
             builder.HasOne(s => s.Group)
                 .WithMany(g => g.Students)
-                .HasForeignKey(s => s.GroupId);
-            //builder.HasKey(t => t.Id);
-
-            //builder
-            //    .HasOne(g => g.Group)
-            //    .WithMany(g => g.Students)
-            //    .HasForeignKey(s => s.GroupId);
+                .HasForeignKey(s => s.GroupId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

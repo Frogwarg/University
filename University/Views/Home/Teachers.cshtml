@@ -4,89 +4,6 @@
     string subjects = "";
 }
 @model University.Models.TeachersViewModel
-
-<form asp-action="SearchTeachers" method="get">
-    <div>
-        <label>ФИО: </label>
-        <input type="text" name="searchFIO" placeholder="ФИО преподавателя..." value="@Model.SearchFIO" />
-
-        <label>Ученая степень: </label>
-        <select name="selectedDegree">
-            <option value=""> Все степени</option>
-            
-            @foreach (var degree in Model.UniqueDegrees)
-            {
-                <option value="@degree" selected="@(Model.SelectedDegree == degree)">@degree</option>
-            }
-        </select>
-
-        <label>Предмет: </label>
-        <select name="selectedSubject">
-            <option value="">Все предметы</option>
-            @foreach (var subject in Model.Subjects)
-            {
-                <option value="@subject.Name" selected="@(Model.SelectedSubject != null && Model.SelectedSubject.Name == subject.Name)">@subject.Name</option>
-            }
-        </select>
-        <input type="submit" value="Поиск" />
-    </div>
-</form>
-
-<table>
-    <caption>Преподаватели</caption>
-    <thead>
-        <td>ФИО</td>
-        <td>Дата рождения</td>
-        <td>Ученая степень</td>
-        <td>Описание</td>
-        <td>Предметы</td>
-    </thead>
-    
-    @if (Model.FilteredTeachers != null && Model.FilteredTeachers.Any())
-    {
-        @foreach (var teacher in Model.FilteredTeachers)
-        {
-            degrees = "";
-            subjects = "";
-            <tr>
-                <td><a asp-action="SearchTeachers" asp-controller="Home" asp-route-selectedTeacher="@teacher.Name">@(@teacher.Surname + " " + @teacher.Name + " " + @teacher.Patronymic)</a></td>
-                <td>@teacher.DateOfBirth.ToString("dd-MM-yyyy")</td>
-
-                @foreach (var degree in @teacher.Degrees)
-                {
-                    degrees += degree;
-                    if (teacher.Degrees.IndexOf(degree) != teacher.Degrees.Count - 1)
-                    {
-                        degrees += ", ";
-                    }
-                }
-                <td>@degrees</td>
-                <td class="table__col_description">@teacher.Description</td>
-                @if (teacher.Subjects != null)
-                {
-                    @foreach (var subject in @teacher.Subjects)
-                    {
-                        subjects += subject.Name;
-                        if (teacher.Subjects.IndexOf(subject) != teacher.Subjects.Count - 1)
-                        {
-                            subjects += ", ";
-                        }
-                    }
-                }
-                else
-                {
-                    subjects = "Пусто";
-                }
-
-                <td>@subjects</td>
-            </tr>
-        }
-    }
-    else
-    {
-        <tfoot><td colspan="5">Результатов нет</td></tfoot>
-    }
-</table>
 @if (Model.SelectedTeacher != null)
 {
     Teacher teacher = Model.SelectedTeacher;
@@ -143,6 +60,93 @@
                 <p class="profile__subjects">Ведёт предметы: @subjects</p>
             </div>
         </div>
+    </div>
+}
+else
+{
+    <form class="filter__form" asp-action="SearchTeachers" method="get">
+        <div>
+            <label>ФИО: </label>
+            <input type="text" name="searchFIO" placeholder="ФИО преподавателя..." value="@Model.SearchFIO" />
+
+            <label>Ученая степень: </label>
+            <select name="selectedDegree">
+                <option value="">По умолчанию</option>
+
+                @foreach (var degree in Model.UniqueDegrees)
+                {
+                    <option value="@degree" selected="@(Model.SelectedDegree == degree)">@degree</option>
+                }
+            </select>
+
+            <label>Предмет: </label>
+            <select name="selectedSubject">
+                <option value="">По умолчанию</option>
+                @foreach (var subject in Model.Subjects)
+                {
+                    <option value="@subject.Name" selected="@(Model.SelectedSubject != null && Model.SelectedSubject.Name == subject.Name)">@subject.Name</option>
+                }
+            </select>
+            <input type="submit" value="Поиск" />
+        </div>
+    </form>
+
+    <table>
+        <caption>Преподаватели</caption>
+        <thead>
+        <td>ФИО</td>
+        <td>Дата рождения</td>
+        <td>Ученая степень</td>
+        <td>Описание</td>
+        <td>Предметы</td>
+        <td colspan="2">Действия</td>
+        </thead>
+
+        @if (Model.FilteredTeachers != null && Model.FilteredTeachers.Any())
+        {
+            @foreach (var teacher in Model.FilteredTeachers)
+            {
+                degrees = "";
+                subjects = "";
+                <tr>
+                    <td><a target="_blank" asp-action="SearchTeachers" asp-controller="Home" asp-route-selectedTeacher="@teacher.Name">@(@teacher.Surname + " " + @teacher.Name + " " + @teacher.Patronymic)</a></td>
+                    <td>@teacher.DateOfBirth.ToString("dd-MM-yyyy")</td>
+
+                    @foreach (var degree in @teacher.Degrees)
+                    {
+                        degrees += degree;
+                        if (teacher.Degrees.IndexOf(degree) != teacher.Degrees.Count - 1)
+                        {
+                            degrees += ", ";
+                        }
+                    }
+                    <td>@(!string.IsNullOrEmpty(degrees) ? degrees : "Пусто")</td>
+                    <td class="table__col_description">@teacher.Description</td>
+                    @if (teacher.Subjects != null)
+                    {
+                        @foreach (var subject in @teacher.Subjects)
+                        {
+                            subjects += subject.Name;
+                            if (teacher.Subjects.IndexOf(subject) != teacher.Subjects.Count - 1)
+                            {
+                                subjects += ", ";
+                            }
+                        }
+                    }
+                    <td>@(!string.IsNullOrEmpty(subjects) ? subjects : "Пусто")</td>
+                    <td><a href="#">Изменить</a></td>
+                    <td><a asp-action="DeleteTeacher" asp-controller="Home" asp-route-TeacherID="@teacher.Id">Удалить</a></td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tfoot>
+            <td colspan="6">Результатов нет</td></tfoot>
+        }
+    </table>
+    <div class="add__button_container">
+        <button type="button" class="add__button">+Добавить преподавателя</button>
     </div>
 }
 

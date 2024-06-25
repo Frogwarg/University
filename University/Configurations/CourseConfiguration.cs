@@ -15,13 +15,8 @@ namespace University.Configurations
 
             builder.HasMany(c => c.Groups)
                 .WithOne(g => g.Course)
-                .HasForeignKey(g => g.CourseId);
-            //builder.HasKey(t => t.Id);
-
-            //builder
-            //    .HasMany(g => g.Groups)
-            //    .WithOne(c => c.Course)
-            //    .HasForeignKey(c => c.Id);
+                .HasForeignKey(g => g.CourseId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

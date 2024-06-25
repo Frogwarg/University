@@ -84,7 +84,7 @@ main {
     cursor: pointer;
 }
 
-form {
+.filter__form {
     margin-top: 40px;
     width: 100%;
     height: 30px;
@@ -171,4 +171,42 @@ a{
 .profile__picture_image {
     width: 100%;
     height: 100%;
+}
+.add__button_container {
+    display: flex;
+    place-content: center;
+}
+
+.add__button {
+    margin-top: 20px;
+}
+.create__container {
+    display: grid;
+    place-content: center;
+    margin-top: 40px;
+}
+
+    .create__container > form {
+        display: grid;
+        grid-template-columns: auto auto;
+        column-gap: 30px;
+        row-gap: 10px;
+    }
+
+        .create__container > form > p {
+            grid-column: 1;
+            margin: auto 0;
+        }
+
+        .create__container > form > input:not(.create__btn), .create__container > form > select:not(.create__btn) {
+            grid-column: 2;
+            height: 25px;
+        }
+
+.create__btn {
+    width: 120px;
+    height: 20px;
+    justify-self: center;
+    grid-column: span 2;
+    margin-top: 20px;
 }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using University.Models;
 
@@ -23,11 +24,49 @@ namespace University.Controllers
             await db.SaveChangesAsync();
             return View();
         }
+
+
+        public async Task<IActionResult> Courses(string? searchCourse)
+        {
+            var courses = await db.Courses.ToListAsync();
+            List<Course> filteredCourses = courses;
+
+            if (!string.IsNullOrEmpty(searchCourse))
+            {
+                var searchCourseCopy = searchCourse.ToLower();
+                filteredCourses = filteredCourses.Where(g => g.Name.ToLower().Contains(searchCourseCopy)).ToList();
+            }
+
+            var model = new CoursesViewModel
+            {
+                Courses = courses,
+                SearchCourse = searchCourse,
+                FilteredCourses = filteredCourses
+            };
+            return View("Courses", model);
+        }
+        [HttpGet]
+        public async Task<IActionResult> SearchCourses(string? searchCourse)
+        {
+            return RedirectToAction("Courses", new { searchCourse });
+        }
+        public async Task<IActionResult> DeleteCourse(Guid CourseID)
+        {
+            var course = await db.Courses.FindAsync(CourseID);
+            if (course != null)
+            {
+                db.Courses.Remove(course);
+                await db.SaveChangesAsync();
+            }
+            return RedirectToAction("Courses");
+        }
+
+
         public async Task<IActionResult> Groups(string? selectedCourse, string searchTerm)
         {
             var groups = await db.Groups.Include(g => g.Course).Include(g => g.Curator).ToListAsync();
             var uniqueCourses = groups.Select(g => g.Course.Name).Distinct().ToList();
-            List<University.Models.Group> filteredGroups = groups;
+            List<Group> filteredGroups = groups;
 
             if (!string.IsNullOrEmpty(selectedCourse))
             {
@@ -46,7 +85,8 @@ namespace University.Controllers
                 UniqueCourses = uniqueCourses,
                 SelectedCourse = selectedCourse,
                 SearchTerm = searchTerm,
-                FilteredGroups = filteredGroups
+                FilteredGroups = filteredGroups,
+                Teachers=db.Teachers.ToList()
             };
 
             return View("Groups", model);
@@ -55,6 +95,30 @@ namespace University.Controllers
         public async Task<IActionResult> SearchGroups(string? selectedCourse, string searchTerm)
         {
             return RedirectToAction("Groups", new { selectedCourse, searchTerm });
+        }
+        [HttpPost]
+        public async Task<IActionResult> CreateGroup(string? createName, string? createCourse, Teacher? createCurator, string createDesc="")
+        {
+            Group newGroup = new Group
+            {
+                Name = createName,
+                Description = createDesc,
+                Course = new Course(),
+                Curator = createCurator
+            };
+            await db.Groups.AddAsync(newGroup);
+            await db.SaveChangesAsync();
+            return RedirectToAction("Groups");
+        }
+        public async Task<IActionResult> DeleteGroup(Guid GroupID)
+        {
+            var group = await db.Groups.FindAsync(GroupID);
+            if (group != null)
+            {
+                db.Groups.Remove(group);
+                await db.SaveChangesAsync();
+            }
+            return RedirectToAction("Groups");
         }
 
 
@@ -90,6 +154,16 @@ namespace University.Controllers
         {
             return RedirectToAction("Students", new { searchFIO, searchGroup, selectedStudent });
         }
+        public async Task<IActionResult> DeleteStudent(Guid StudentID)
+        {
+            var student = await db.Students.FindAsync(StudentID);
+            if (student != null)
+            {
+                db.Students.Remove(student);
+                await db.SaveChangesAsync();
+            }
+            return RedirectToAction("Students");
+        }
 
 
         public async Task<IActionResult> Teachers(string? searchFIO, string? selectedSubject, string? selectedDegree, string? selectedTeacher)
@@ -114,7 +188,6 @@ namespace University.Controllers
                 filteredTeachers = filteredTeachers.Where(teacher => teacher.Subjects.Any(subject => subject.Name == selectedSubject)).ToList();
             }
             var subjects = await db.Subjects.ToListAsync();
-            Console.WriteLine("Имя учителя: "+ selectedTeacher);
             var model = new TeachersViewModel
             {
                 Teachers = teachers,
@@ -133,6 +206,16 @@ namespace University.Controllers
         public async Task<IActionResult> SearchTeachers(string? searchFIO, string? selectedSubject, string? selectedDegree, string selectedTeacher = null)
         {
             return RedirectToAction("Teachers", new { searchFIO, selectedSubject, selectedDegree, selectedTeacher });
+        }
+        public async Task<IActionResult> DeleteTeacher(Guid TeacherID)
+        {
+            var teacher = await db.Teachers.FindAsync(TeacherID);
+            if (teacher != null)
+            {
+                db.Teachers.Remove(teacher);
+                await db.SaveChangesAsync();
+            }
+            return RedirectToAction("Teachers");
         }
 
 
@@ -160,6 +243,16 @@ namespace University.Controllers
         public async Task<IActionResult> SearchSubjects(string? searchSubject)
         {
             return RedirectToAction("Subjects", new { searchSubject});
+        }
+        public async Task<IActionResult> DeleteSubject(Guid SubjectID)
+        {
+            var subject = await db.Subjects.FindAsync(SubjectID);
+            if (subject != null)
+            {
+                db.Subjects.Remove(subject);
+                await db.SaveChangesAsync();
+            }
+            return RedirectToAction("Subjects");
         }
 
 

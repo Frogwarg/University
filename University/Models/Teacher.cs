@@ -11,7 +11,7 @@
         public string Description { get; set; } = string.Empty;
         public string ImagePath { get; set; } = "/images/default_empty.jpg";
         public List<Subject> Subjects { get; set; } = new List<Subject>();
-        public Guid GroupId { get; set; }
+        public Guid? GroupId { get; set; }
         public Group Group { get; set; }
     }
 }

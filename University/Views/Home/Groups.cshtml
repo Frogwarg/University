@@ -3,7 +3,7 @@
 }
 @model University.Models.GroupsViewModel
 
-<form asp-action="SearchGroups" method="get">
+<form class="filter__form" asp-action="SearchGroups" method="get">
     <div>
         <label>Название: </label>
         <input type="text" name="searchTerm" placeholder="Название группы..." value="@Model.SearchTerm" />
@@ -23,11 +23,12 @@
 <table>
     <caption>Группы</caption>
     <thead>
-        <td>Наименование группы</td>
+        <td>Наименование</td>
         <td>Описание</td>
         <td>Курс</td>
         <td>Куратор</td>
         <td>Студенты</td>
+        <td colspan="2">Действия</td>
     </thead>
     @if (Model.FilteredGroups != null && Model.FilteredGroups.Any())
     {
@@ -36,16 +37,53 @@
             <tr>
                 <td>@group.Name</td>
                 <td class="table__col_description">@group.Description</td>
-                <td>@(@group.Course != null ? @group.Course.Name : "Пусто")</td>
-                <td><a asp-controller="Home" asp-action="SearchTeachers" asp-route-searchFIO="@(@group.Curator != null ? @group.Curator.Surname :"")">@(@group.Curator != null ? (@group.Curator.Surname + " " + @group.Curator.Name[0] + ". " + @group.Curator.Patronymic[0] + ". ") : "Пусто")</a></td>
+                <td><a asp-controller="Home" asp-action="SearchCourses" asp-route-searchCourse="@(@group.Course != null ? @group.Course.Name : "")">@(@group.Course != null ? @group.Course.Name : "Пусто")</a></td>
+                <td>
+                    @if (group.Curator == null)
+                    {
+                        <p>Пусто</p>
+                    }
+                    else
+                    {
+                        <a target="_blank" asp-controller="Home" asp-action="SearchTeachers" asp-route-selectedTeacher="@group.Curator.Name">@(@group.Curator.Surname + " " + @group.Curator.Name[0] + ". " + @group.Curator.Patronymic[0] + ". ")</a>
+                    }
+                </td>
                 <td><a asp-controller="Home" asp-action="SearchStudents" asp-route-searchGroup="@group.Name">Просмотреть &#9660;</a></td>
+                <td><a href="#">Изменить</a></td>
+                <td><a asp-action="DeleteGroup" asp-controller="Home" asp-route-GroupID="@group.Id">Удалить</a></td>
             </tr>
         }
     }
     else
     {
-        <tfoot><td  colspan="5">Результатов нет</td></tfoot>
+        <tfoot><td  colspan="6">Результатов нет</td></tfoot>
     }
 </table>
+<div class="add__button_container">
+    <button type="button" id="add__button" class="add__button">+Добавить группу</button>
+</div>
+
+<div class="create__container" style="display: none;">
+    <form action="CreateGroup" method="post">
+        <p class="create__name">Наименование группы: </p>
+        <input name="createName" placeholder="Наименование..." required>
+        <p class="create__description">Описание:</p>
+        <input name="createDesc" placeholder="Описание...">
+        <p class="create__course">Курс:</p>
+        <select name="createCourse" id="" required>
+            <option value="3">3</option>
+            <option value="4">4</option>
+        </select>
+        <p class="create__teacher">Куратор: </p>
+        <select name="createCurator" id="" required>
+            @foreach (var teacher in Model.Teachers)
+            {
+                <option value="@teacher">@(@teacher.Surname+" "+teacher.Name+" "+teacher.Patronymic)</option>
+            }
+        </select>
+        <input class="create__btn" type="submit" value="Создать группу">
+    </form>
+</div>
+
 
 

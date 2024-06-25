@@ -7,5 +7,6 @@
         public string SelectedCourse { get; set; } = string.Empty;
         public string SearchTerm { get; set; } = string.Empty;
         public List<Group> FilteredGroups { get; set; } = new List<Group>();
+        public List<Teacher> Teachers { get; set; } = new List<Teacher>();
     }
 }

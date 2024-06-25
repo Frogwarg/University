@@ -2,43 +2,6 @@
     ViewData["Title"] = "Students List";
 }
 @model University.Models.StudentsViewModel
-
-<form asp-action="SearchStudents" method="get">
-    <div>
-        <label>ФИО: </label>
-        <input type="text" name="searchFIO" placeholder="ФИО студента..." value="@Model.SearchFIO" />
-
-        <label>Группа: </label>
-        <input type="text" name="searchGroup" placeholder="Группа..." value="@Model.SearchGroup" />
-        <input type="submit" value="Поиск" />
-    </div>
-</form>
-
-<table>
-    <caption>Студенты</caption>
-    <thead>
-        <td>ФИО</td>
-        <td>Дата рождения</td>
-        <td>Описание</td>
-        <td>Группа</td>
-    </thead>
-    @if (Model.FilteredStudents != null && Model.FilteredStudents.Any())
-    {
-        @foreach (var student in Model.FilteredStudents)
-        {
-            <tr>
-                <td><a asp-action="SearchStudents" asp-controller="Home" asp-route-selectedStudent="@student.Name">@(@student.Surname + " " + @student.Name + " " + @student.Patronymic)</a></td>
-                <td>@student.DateOfBirth.ToString("dd-MM-yyyy")</td>
-                <td class="table__col_description">@student.Description</td>
-                <td> <a asp-controller="Home" asp-action="SearchGroups" asp-route-searchTerm="@(@student.Group != null ? @student.Group.Name : "")"> @(@student.Group != null ? @student.Group.Name : "Пусто") </a></td>
-            </tr>
-        }
-    }
-    else
-    {
-        <tfoot><td colspan="4">Результатов нет</td></tfoot>
-    }
-</table>
 @if (Model.SelectedStudent != null)
 {
         Student student = Model.SelectedStudent;
@@ -67,6 +30,52 @@
                 <p class="profile__group">Группа: @student.Group.Name</p>
             </div>
         </div>
+    </div>
+}
+else
+{
+    <form class="filter__form" asp-action="SearchStudents" method="get">
+        <div>
+            <label>ФИО: </label>
+            <input type="text" name="searchFIO" placeholder="ФИО студента..." value="@Model.SearchFIO" />
+
+            <label>Группа: </label>
+            <input type="text" name="searchGroup" placeholder="Группа..." value="@Model.SearchGroup" />
+            <input type="submit" value="Поиск" />
+        </div>
+    </form>
+
+    <table>
+        <caption>Студенты</caption>
+        <thead>
+        <td>ФИО</td>
+        <td>Дата рождения</td>
+        <td>Описание</td>
+        <td>Группа</td>
+        <td colspan="2">Действия</td>
+        </thead>
+        @if (Model.FilteredStudents != null && Model.FilteredStudents.Any())
+        {
+            @foreach (var student in Model.FilteredStudents)
+            {
+                <tr>
+                    <td><a target="_blank" asp-action="SearchStudents" asp-controller="Home" asp-route-selectedStudent="@student.Name">@(@student.Surname + " " + @student.Name + " " + @student.Patronymic)</a></td>
+                    <td>@student.DateOfBirth.ToString("dd-MM-yyyy")</td>
+                    <td class="table__col_description">@student.Description</td>
+                    <td> <a asp-controller="Home" asp-action="SearchGroups" asp-route-searchTerm="@(@student.Group != null ? @student.Group.Name : "")"> @(@student.Group != null ? @student.Group.Name : "Пусто") </a></td>
+                    <td><a href="#">Изменить</a></td>
+                    <td><a asp-action="DeleteStudent" asp-controller="Home" asp-route-StudentID="@student.Id">Удалить</a></td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tfoot>
+            <td colspan="5">Результатов нет</td></tfoot>
+        }
+    </table>
+    <div class="add__button_container">
+        <button type="button" class="add__button">+Добавить студента</button>
     </div>
 }
 
