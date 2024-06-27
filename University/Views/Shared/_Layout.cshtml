@@ -22,23 +22,23 @@
     <main>
         <div class="container">
             <div class="main__categories">
-                <div class="main__category" onclick="window.location.href='/Home/Courses';">
+                <div class="main__category" onclick="window.location.href='/Course/Courses';">
                     <img src="~/images/course.png" alt="Лого курса" class="category__img">
                     <p class="category__text">Курсы</p>
                 </div>
-                <div class="main__category" onclick="window.location.href='/Home/Groups';">
+                <div class="main__category" onclick="window.location.href='/Group/Groups';">
                     <img src="~/images/group.png" alt="Лого группы" class="category__img">
                     <p class="category__text">Группы</p>
                 </div>
-                <div class="main__category" onclick="window.location.href='/Home/Students';">
+                <div class="main__category" onclick="window.location.href='/Student/Students';">
                     <img src="~/images/student.png" alt="Лого студента" class="category__img">
                     <p class="category__text">Студенты</p>
                 </div>
-                <div class="main__category" onclick="window.location.href='/Home/Teachers';">
+                <div class="main__category" onclick="window.location.href='/Teacher/Teachers';">
                     <img src="~/images/teacher.png" alt="Лого учителя" class="category__img">
                     <p class="category__text">Преподаватели</p>
                 </div>
-                <div class="main__category" onclick="window.location.href='/Home/Subjects';">
+                <div class="main__category" onclick="window.location.href='/Subject/Subjects';">
                     <img src="~/images/subject.png" alt="Лого предмета" class="category__img">
                     <p class="category__text">Предметы</p>
                 </div>
@@ -53,7 +53,37 @@
             &copy; 2024 - University
         </div>
     </footer>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+            $('form').on('submit', function (e) {
+                var isValid = true;
+                var errorMessage = '';
+
+                // Проверяем поля name, surname, patronymic на длину не более 100 символов
+                $(this).find('input[name$="Name"], input[name$="Surname"], input[name$="Patronymic"]').each(function () {
+                    if ($(this).val().length > 100) {
+                        isValid = false;
+                        errorMessage += 'Поле ' + $(this).attr('placeholder') + ' не должно превышать 100 символов.\n';
+                    }
+                });
+
+                // Проверяем поле description на длину не более 1000 символов
+                $(this).find('input[name$="Desc"], input[name$="Description"]').each(function () {
+                    if ($(this).val().length > 1000) {
+                        isValid = false;
+                        errorMessage += 'Поле ' + $(this).attr('placeholder') + ' не должно превышать 1000 символов.\n';
+                    }
+                });
+
+                if (!isValid) {
+                    alert(errorMessage);
+                    e.preventDefault(); // Отменяет отправку формы
+                }
+            });
+        });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

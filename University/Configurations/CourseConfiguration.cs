@@ -13,6 +13,8 @@ namespace University.Configurations
             builder.Property(c => c.Name).IsRequired().HasMaxLength(100);
             builder.Property(c => c.Description).HasMaxLength(1000);
 
+            builder.HasIndex(s => s.Name);
+
             builder.HasMany(c => c.Groups)
                 .WithOne(g => g.Course)
                 .HasForeignKey(g => g.CourseId)

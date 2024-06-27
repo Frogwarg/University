@@ -19,7 +19,6 @@ namespace University.Configurations
 
             builder.HasIndex(s => s.Name);
             builder.HasIndex(s => s.Surname);
-            builder.HasIndex(s => s.Patronymic);
             builder.HasIndex(s => s.DateOfBirth);
 
             builder.HasOne(s => s.Group)

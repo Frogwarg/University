@@ -1,0 +1,93 @@
+﻿@model University.Models.CoursesViewModel
+
+<form class="filter__form" asp-action="SearchCourses" asp-controller="Course" method="get">
+    <div>
+        <label>Название: </label>
+        <input type="text" name="searchCourse" placeholder="Название курса..." value="@Model.SearchCourse" />
+        <input type="submit" value="Поиск" />
+    </div>
+</form>
+
+<table>
+    <caption>Курсы</caption>
+    <thead>
+    <td>Наименование</td>
+    <td>Описание</td>
+    <td colspan="2">Действия</td>
+    </thead>
+    @if (Model.FilteredCourses != null && Model.FilteredCourses.Any())
+    {
+        @foreach (var course in Model.FilteredCourses)
+        {
+            <tr>
+                <td>@course.Name</td>
+                <td class="table__col_description">@(!string.IsNullOrEmpty(@course.Description) ? @course.Description : "*Пусто*")</td>
+                <td><button type="button" class="update__button" data-id="@course.Id" data-name="@course.Name" data-description="@course.Description">Изменить</button></td>
+                <td><a asp-action="DeleteCourse" asp-controller="Course" asp-route-CourseID="@course.Id">Удалить</a></td>
+            </tr>
+        }
+    }
+    else
+    {
+        <tfoot>
+        <td colspan="3">Результатов нет</td></tfoot>
+    }
+</table>
+<div class="add__button_container">
+    <button type="button" id="add__button" class="add__button">+Добавить</button>
+</div>
+
+<div class="create__container" style="display: none;">
+    <form class="create__form" asp-action="CreateCourse" asp-controller="Course" method="post">
+        <p class="create__name">Наименование курса: </p>
+        <input name="createName" placeholder="Наименование..." required>
+        <p class="create__description">Описание:</p>
+        <input name="createDesc" placeholder="Описание...">
+        <input class="create__btn" type="submit" value="Создать курс">
+    </form>
+</div>
+
+<div class="update__container" style="display: none;">
+    <form class="update__form" asp-action="UpdateCourse" asp-controller="Course" method="post">
+        <input type="hidden" name="updateId" id="updateCourseId" />
+        <p class="update__name">Наименование курса: </p>
+        <input name="updateName" placeholder="Наименование..." required>
+        <p class="update__description">Описание:</p>
+        <input name="updateDesc" placeholder="Описание...">
+        <input class="update__btn" type="submit" value="Обновить информацию">
+    </form>
+</div>
+
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            $('.update__button').on('click', function () {
+                var courseId = $(this).data('id');
+                var courseName = $(this).data('name');
+                var courseDescription = $(this).data('description');
+
+                $('#updateCourseId').val(courseId);
+                $('input[name="updateName"]').val(courseName);
+                $('input[name="updateDesc"]').val(courseDescription);
+
+                $('#add__button').text('Закрыть');
+                if (!$('.update__container').is(':visible')) {
+                    $('.create__container').hide();
+                    $('.update__container').show();
+                }
+            });
+            $('#add__button').on('click', function () {
+                if (!$('.create__container').is(':visible') && !$('.update__container').is(':visible')) {
+                    $('.create__container').show();
+                    $('#add__button').text('Закрыть');
+                } else if ($('.create__container').is(':visible')) {
+                    $('.create__container').hide();
+                    $('#add__button').text('+Добавить');
+                } else if ($('.update__container').is(':visible')) {
+                    $('.update__container').hide();
+                    $('#add__button').text('+Добавить');
+                }
+            });
+        });
+    </script>
+}

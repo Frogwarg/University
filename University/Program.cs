@@ -1,6 +1,7 @@
 using University.Models;
 using Microsoft.EntityFrameworkCore;
 using University;
+using Microsoft.Data.SqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +36,8 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller}/{action}/{id?}",
+    defaults: new { controller = "Home", action = "Index" }
+);
 
 app.Run();

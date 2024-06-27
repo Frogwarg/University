@@ -131,13 +131,21 @@ a:visited {
 a{
     color:black;
 }
+.update__button{
+    border:none;
+    background:transparent;
+    text-decoration:underline;
+    text-indent:initial;
+}
+.update__button:hover{
+    cursor:pointer;
+}
 .profile {
     margin-top: 30px;
     display: flex;
     justify-content: center;
     height: fit-content;
 }
-
 .profile__container {
     display: flex;
     flex-direction: column;
@@ -184,25 +192,25 @@ a{
 .add__button {
     margin-top: 20px;
 }
-.create__container {
+.create__container,.update__container {
     display: grid;
     place-content: center;
     margin-top: 40px;
 }
 
-    .create__container > .create__form {
+    .create__container > .create__form, .update__container>.update__form {
         display: grid;
         grid-template-columns: auto auto;
         column-gap: 30px;
         row-gap: 10px;
     }
 
-        .create__container > .create__form > p {
+        .create__container > .create__form > p, .update__container > .update__form> p {
             grid-column: 1;
             margin: auto 0;
         }
 
-        .create__container > .create__form > input:not(.create__btn), .create__container > .create__form > select:not(.create__btn) {
+        .create__container > .create__form > input:not(.create__btn), .create__container > .create__form > select:not(.create__btn), .update__container > .update__form > input:not(.update__btn), .update__container > .update__form > select:not(.update__btn) {
             grid-column: 2;
             height: 25px;
         }
@@ -217,7 +225,7 @@ a{
 .create__subjects_item{
     display:flex;
 }
-.create__btn {
+.create__btn, .update__btn {
     width: fit-content;
     height: 20px;
     justify-self: center;

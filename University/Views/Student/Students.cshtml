@@ -1,0 +1,231 @@
+﻿@model University.Models.StudentsViewModel
+@if (Model.SelectedStudent != null)
+{
+        Student student = Model.SelectedStudent;
+        <div class="profile">
+        <div class="profile__container">
+            <p class="profile__status">Информация о студенте</p>
+            <div class="profile__picture">
+                @{
+                    string filePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", student.ImagePath.TrimStart('/'));
+                }
+                @if (System.IO.File.Exists(@filePath))
+                {
+                    <img src="@student.ImagePath" alt="Фото профиля" class="profile__picture_image">
+                }
+                else
+                {
+                    <img src="/images/default_empty.jpg" alt="Фото профиля отсутствует" class="profile__picture_image">
+                }
+            </div>
+            <div class="profile__name_container">
+                <p class="profile__name">Имя: @student.Name</p>
+            </div>
+            <div class="profile__surname_container">
+                <p class="profile__surname">Фамилия: @student.Surname</p>
+            </div>
+            <div class="profile__patronymic_container">
+                <p class="profile__patronymic">Отчество: @student.Patronymic</p>
+            </div>
+            <div class="profile__dateofbirth_container">
+                <p class="profile__dateofbirth">Дата рождения: @student.DateOfBirth.ToString("dd-MM-yyyy")</p>
+            </div>
+            <div class="profile__description_container">
+                <p class="profile__description">Описание: @(!string.IsNullOrEmpty(student.Description) ? student.Description : "*Пусто*")</p>
+            </div>
+            <div class="profile__group_container">
+                <p class="profile__group">Группа: @student.Group.Name</p>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <form class="filter__form" asp-action="SearchStudents" asp-controller="Student" method="get">
+        <div>
+            <label>ФИО: </label>
+            <input type="text" name="searchFIO" placeholder="ФИО студента..." value="@Model.SearchFIO" />
+
+            <label>Группа: </label>
+            <input type="text" name="searchGroup" placeholder="Группа..." value="@Model.SearchGroup" />
+            <input type="submit" value="Поиск" />
+        </div>
+    </form>
+
+    <table>
+        <caption>Студенты</caption>
+        <thead>
+        <td>ФИО</td>
+        <td>Дата рождения</td>
+        <td>Описание</td>
+        <td>Группа</td>
+        <td colspan="2">Действия</td>
+        </thead>
+        @if (Model.FilteredStudents != null && Model.FilteredStudents.Any())
+        {
+            @foreach (var student in Model.FilteredStudents)
+            {
+                <tr>
+                    <td><a target="_blank" asp-action="SearchStudents" asp-controller="Student" asp-route-selectedStudent="@student.Name">@(@student.Surname + " " + @student.Name + " " + @student.Patronymic)</a></td>
+                    <td>@student.DateOfBirth.ToString("dd-MM-yyyy")</td>
+                    <td class="table__col_description">@(!string.IsNullOrEmpty(@student.Description) ? @student.Description : "*Пусто*")</td>
+                    @if (student.Group != null)
+                    {
+                        <td> <a asp-controller="Group" asp-action="SearchGroups" asp-route-searchTerm="@student.Group.Name"> @student.Group.Name </a></td>
+                    }
+                    else
+                    {
+                        <td>Пусто</td>
+                    }
+                    <td>
+                        <button type="button" class="update__button"
+                                data-id="@student.Id"
+                                data-name="@student.Name"
+                                data-surname="@student.Surname"
+                                data-patronymic="@student.Patronymic"
+                                data-dateofbirth="@student.DateOfBirth.ToString("o")"
+                                data-description="@student.Description"
+                                data-group="@(student.Group != null ? @student.Group.Id: (Model.Groups.Count>0 ? Model.Groups[0].Id : ""))">
+                            Изменить
+                        </button>
+                    </td>
+                    <td><a asp-action="DeleteStudent" asp-controller="Student" asp-route-StudentID="@student.Id">Удалить</a></td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tfoot>
+            <td colspan="5">Результатов нет</td></tfoot>
+        }
+    </table>
+    <div class="add__button_container">
+        <button type="button" id="add__button" class="add__button">+Добавить</button>
+    </div>
+
+    <div class="create__container" style="display: none;">
+        <form class="create__form" asp-action="CreateStudent" asp-controller="Student" method="post" enctype="multipart/form-data">
+            <p class="create__name">Имя: </p>
+            <input name="createName" placeholder="Имя..." required>
+            <p class="create__surname">Фамилия:</p>
+            <input name="createSurname" placeholder="Фамилия..." required>
+            <p class="create__patronymic">Отчество (если есть):</p>
+            <input name="createPatronymic" placeholder="Отчество...">
+            <p class="create__dateOfBirth">Дата рождения:</p>
+            <input type="date" id="createDateOfBirth" name="createDateOfBirth" placeholder="Дата рождения..." required>
+            <p class="create__description">Описание:</p>
+            <input name="createDesc" placeholder="Описание...">
+            <p class="create__photo">Фотография:</p>
+            <input type="file" name="createImage" placeholder="Фото...">
+            <p class="create__subjects">Группа:</p>
+            @if (Model.Groups.Count != 0)
+            {
+                <select name="crSelectedGroup" class="create__groups_container">
+                    @foreach (var group in Model.Groups)
+                    {
+                        <option value="@group.Id">@group.Name</option>
+                    }
+                </select>
+            }
+            else
+            {
+                <button type="button" class="create__group" onclick="location.href='@Url.Action("Groups", "Home")'">Создать группу</button>
+            }
+            <input class="create__btn" type="submit" value="Добавить студента">
+        </form>
+    </div>
+
+    <div class="update__container" style="display: none;">
+        <form class="update__form" asp-action="UpdateStudent" asp-controller="Student" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="updateId" id="updateStudentId" />
+            <p class="update__name">Имя: </p>
+            <input name="updateName" placeholder="Имя..." required>
+            <p class="update__surname">Фамилия:</p>
+            <input name="updateSurname" placeholder="Фамилия..." required>
+            <p class="update__patronymic">Отчество (если есть):</p>
+            <input name="updatePatronymic" placeholder="Отчество...">
+            <p class="update__dateOfBirth">Дата рождения:</p>
+            <input type="date" id="updateDateOfBirth" name="updateDateOfBirth" placeholder="Дата рождения..." required>
+            <p class="update__description">Описание:</p>
+            <input name="updateDesc" placeholder="Описание...">
+            <p class="update__photo">Фотография:</p>
+            <input type="file" name="currentImagePath" placeholder="Фото...">
+            <p class="update__subjects">Группа:</p>
+            @if (Model.Groups.Count != 0)
+            {
+                <select name="selectedGroup" class="create__groups_container">
+                    @foreach (var group in Model.Groups)
+                    {
+                        <option value="@group.Id">@group.Name</option>
+                    }
+                </select>
+            }
+            else
+            {
+                <button type="button" class="create__group" onclick="location.href='@Url.Action("Groups", "Home")'">Создать группу</button>
+            }
+            <input class="update__btn" type="submit" value="Обновить информацию">
+        </form>
+    </div>
+}
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            $('.update__button').on('click', function () {
+                var studentId = $(this).data('id');
+                var studentName = $(this).data('name');
+                var studentSurname = $(this).data('surname');
+                var studentPatronymic = $(this).data('patronymic');
+                var studentDateOfBirth = $(this).data('dateofbirth');
+                var studentDescription = $(this).data('description');
+                var studentGroup = $(this).data('group');
+
+                $('#updateStudentId').val(studentId);
+                $('input[name="updateName"]').val(studentName);
+                $('input[name="updateSurname"]').val(studentSurname);
+                $('input[name="updatePatronymic"]').val(studentPatronymic);
+                $('input[name="updateDateOfBirth"]').val(new Date(studentDateOfBirth).toISOString().split('T')[0]);
+                $('input[name="updateDesc"]').val(studentDescription);
+
+                $('select[name="selectedGroup"]').val(studentGroup);
+
+                $('#add__button').text('Закрыть');
+                if (!$('.update__container').is(':visible')) {
+                    $('.create__container').hide();
+                    $('.update__container').show();
+                }
+            });
+            $('#add__button').on('click', function () {
+                if (!$('.create__container').is(':visible') && !$('.update__container').is(':visible')) {
+                    $('.create__container').show();
+                    $('#add__button').text('Закрыть');
+                } else if ($('.create__container').is(':visible')) {
+                    $('.create__container').hide();
+                    $('#add__button').text('+Добавить');
+                } else if ($('.update__container').is(':visible')) {
+                    $('.update__container').hide();
+                    $('#add__button').text('+Добавить');
+                }
+            });
+        });
+
+        function checkImageFile(file) {
+            const allowedExtensions = /(\.jpg|\.jpeg|\.png)$/i;
+
+            const extension = '.' + file.name.split('.').pop();
+
+            if (!allowedExtensions.exec(extension)) {
+                alert('Выбранный файл не является изображением. Выберите файл с расширением .jpg, .jpeg или .png.');
+                return false;
+            }
+            return true;
+        }
+
+        document.querySelector('input[type="file"]').addEventListener('change', () => {
+            const file = this.files[0];
+            if (file && !checkImageFile(file)) {
+                this.value = '';
+            }
+        });
+    </script>
+}

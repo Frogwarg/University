@@ -1,5 +1,4 @@
 ﻿@{
-    ViewData["Title"] = "Teachers List";
     string degrees="";
     string subjects = "";
 }
@@ -36,7 +35,7 @@
                 <p class="profile__dateofbirth">Дата рождения: @teacher.DateOfBirth.ToString("dd-MM-yyyy")</p>
             </div>
             <div class="profile__description_container">
-                <p class="profile__description">Описание: @teacher.Description</p>
+                <p class="profile__description">Описание: @(!string.IsNullOrEmpty(@teacher.Description) ? teacher.Description : "*Пусто*")</p>
             </div>
             <div class="profile__degree_container">
                 @{degrees="";}
@@ -74,7 +73,7 @@
 }
 else
 {
-    <form class="filter__form" asp-action="SearchTeachers" method="get">
+    <form class="filter__form" asp-action="SearchTeachers" asp-controller="Teacher" method="get">
         <div>
             <label>ФИО: </label>
             <input type="text" name="searchFIO" placeholder="ФИО преподавателя..." value="@Model.SearchFIO" />
@@ -119,7 +118,7 @@ else
                 degrees = "";
                 subjects = "";
                 <tr>
-                    <td><a target="_blank" asp-action="SearchTeachers" asp-controller="Home" asp-route-selectedTeacher="@teacher.Name">@(@teacher.Surname + " " + @teacher.Name + " " + @teacher.Patronymic)</a></td>
+                    <td><a target="_blank" asp-action="SearchTeachers" asp-controller="Teacher" asp-route-selectedTeacher="@teacher.Name">@(@teacher.Surname + " " + @teacher.Name + " " + @teacher.Patronymic)</a></td>
                     <td>@teacher.DateOfBirth.ToString("dd-MM-yyyy")</td>
 
                     @foreach (var degree in @teacher.Degrees)
@@ -131,7 +130,7 @@ else
                         }
                     }
                     <td class="table__col_degrees">@(!string.IsNullOrEmpty(degrees) ? degrees : "Пусто")</td>
-                    <td class="table__col_description">@teacher.Description</td>
+                    <td class="table__col_description">@(!string.IsNullOrEmpty(@teacher.Description) ? @teacher.Description : "*Пусто*")</td>
                     @if (teacher.Subjects != null)
                     {
                         @foreach (var subject in @teacher.Subjects)
@@ -144,8 +143,20 @@ else
                         }
                     }
                     <td class="table__col_subjects">@(!string.IsNullOrEmpty(subjects) ? subjects : "Пусто")</td>
-                    <td><a href="#">Изменить</a></td>
-                    <td><a asp-action="DeleteTeacher" asp-controller="Home" asp-route-TeacherID="@teacher.Id">Удалить</a></td>
+                    <td>
+                        <button type="button" class="update__button"
+                                data-id="@teacher.Id"
+                                data-name="@teacher.Name"
+                                data-surname="@teacher.Surname"
+                                data-patronymic="@teacher.Patronymic"
+                                data-dateofbirth="@teacher.DateOfBirth.ToString("o")"
+                                data-degrees="@string.Join(",", teacher.Degrees)"
+                                data-description="@teacher.Description"
+                                data-subjects="@string.Join(",", teacher.Subjects.Select(s => s.Id))">
+                            Изменить
+                        </button>
+                    </td>
+                    <td><a asp-action="DeleteTeacher" asp-controller="Teacher" asp-route-TeacherID="@teacher.Id">Удалить</a></td>
                 </tr>
             }
         }
@@ -160,7 +171,7 @@ else
     </div>
 
     <div class="create__container" style="display: none;">
-        <form class="create__form" action="CreateTeacher" method="post" enctype="multipart/form-data">
+        <form class="create__form" asp-action="CreateTeacher" asp-controller="Teacher" method="post" enctype="multipart/form-data">
             <p class="create__name">Имя: </p>
             <input name="createName" placeholder="Имя..." required>
             <p class="create__surname">Фамилия:</p>
@@ -182,6 +193,45 @@ else
                     @foreach (var subject in Model.Subjects)
                     {
                         <div class="create__subjects_item">
+                            <input type="checkbox" name="crSelectedSubjects" value="@subject.Id" />
+                            <label>@subject.Name</label>
+                            <input type="hidden" name="crSelectedSubjects.Index" value="@subject.Id" />
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <button type="button" class="create__subject" onclick="location.href='@Url.Action("Subjects", "Subject")'">Создать предмет</button>
+            }
+            <input class="create__btn" type="submit" value="Добавить преподавателя">
+        </form>
+    </div>
+
+    <div class="update__container" style="display: none;">
+        <form class="update__form" asp-action="UpdateTeacher" asp-controller="Teacher" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="updateId" id="updateTeacherId" />
+            <p class="update__name">Имя: </p>
+            <input name="updateName" placeholder="Имя..." required>
+            <p class="update__surname">Фамилия:</p>
+            <input name="updateSurname" placeholder="Фамилия..." required>
+            <p class="update__patronymic">Отчество (если есть):</p>
+            <input name="updatePatronymic" placeholder="Отчество...">
+            <p class="update__dateOfBirth">Дата рождения:</p>
+            <input type="date" id="updateDateOfBirth" name="updateDateOfBirth" placeholder="Дата рождения..." required>
+            <p class="update__degrees">Степени (если есть):</p>
+            <input type="text" name="updateDegrees" placeholder="Степени...">
+            <p class="update__description">Описание:</p>
+            <input name="updateDesc" placeholder="Описание...">
+            <p class="update__photo">Фотография:</p>
+            <input type="file" name="currentImagePath" placeholder="Фото...">
+            <p class="update__subjects">Предметы:</p>
+            @if (Model.Subjects.Count != 0)
+            {
+                <div class="create__subjects_container">
+                    @foreach (var subject in Model.Subjects)
+                    {
+                        <div class="create__subjects_item">
                             <input type="checkbox" name="SelectedSubjects" value="@subject.Id" />
                             <label>@subject.Name</label>
                             <input type="hidden" name="SelectedSubjects.Index" value="@subject.Id" />
@@ -189,28 +239,83 @@ else
                     }
                 </div>
             }
-            <input class="create__btn" type="submit" value="Добавить преподавателя">
+            else
+            {
+                <button type="button" class="create__subject" onclick="location.href='@Url.Action("Subjects", "Subject")'">Создать предмет</button>
+            }
+            <input class="update__btn" type="submit" value="Обновить информацию">
         </form>
     </div>
-}<script>
-     function checkImageFile(file) {
-         const allowedExtensions = /(\.jpg|\.jpeg|\.png)$/i;
+}
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            $('.update__button').on('click', function () {
+                var teacherId = $(this).data('id');
+                var teacherName = $(this).data('name');
+                var teacherSurname = $(this).data('surname');
+                var teacherPatronymic = $(this).data('patronymic');
+                var teacherDateOfBirth = $(this).data('dateofbirth');
+                var teacherDegrees = $(this).data('degrees');
+                var teacherDescription = $(this).data('description');
+                var selectedSubjects = $(this).data('subjects').split(',');
 
-         const extension = '.' + file.name.split('.').pop();
+                $('#updateTeacherId').val(teacherId);
+                $('input[name="updateName"]').val(teacherName);
+                $('input[name="updateSurname"]').val(teacherSurname);
+                $('input[name="updatePatronymic"]').val(teacherPatronymic);
+                $('input[name="updateDateOfBirth"]').val(new Date(teacherDateOfBirth).toISOString().split('T')[0]);
+                $('input[name="updateDegrees"]').val(teacherDegrees);
+                $('input[name="updateDesc"]').val(teacherDescription);
 
-         if (!allowedExtensions.exec(extension)) {
-             alert('Выбранный файл не является изображением. Выберите файл с расширением .jpg, .jpeg или .png.');
-             return false;
-         }
-         return true;
-     }
 
-     document.querySelector('input[type="file"]').addEventListener('change', () => {
-         const file = this.files[0];
-         if (file && !checkImageFile(file)) {
-             this.value = '';
-         }
-     });
-</script>
+                // Сброс всех чекбоксов
+                $('input[name="SelectedSubjects"]').prop('checked', false);
 
+                // Установка значений для чекбоксов
+                if (selectedSubjects) {
+                    selectedSubjects.forEach(function (subjectId) {
+                        $('input[name="SelectedSubjects"][value="' + subjectId + '"]').prop('checked', true);
+                    });
+                }
+
+                $('#add__button').text('Закрыть');
+                if (!$('.update__container').is(':visible')) {
+                    $('.create__container').hide();
+                    $('.update__container').show();
+                }
+            });
+            $('#add__button').on('click', function () {
+                if (!$('.create__container').is(':visible') && !$('.update__container').is(':visible')) {
+                    $('.create__container').show();
+                    $('#add__button').text('Закрыть');
+                } else if ($('.create__container').is(':visible')) {
+                    $('.create__container').hide();
+                    $('#add__button').text('+Добавить');
+                } else if ($('.update__container').is(':visible')) {
+                    $('.update__container').hide();
+                    $('#add__button').text('+Добавить');
+                }
+            });
+        });
+        function checkImageFile(file) {
+            const allowedExtensions = /(\.jpg|\.jpeg|\.png)$/i;
+
+            const extension = '.' + file.name.split('.').pop();
+
+            if (!allowedExtensions.exec(extension)) {
+                alert('Выбранный файл не является изображением. Выберите файл с расширением .jpg, .jpeg или .png.');
+                return false;
+            }
+            return true;
+        }
+
+        document.querySelector('input[type="file"]').addEventListener('change', () => {
+            const file = this.files[0];
+            if (file && !checkImageFile(file)) {
+                this.value = '';
+            }
+        });
+    </script>
+}
 

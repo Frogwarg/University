@@ -1,7 +1,7 @@
-﻿var form = document.querySelector('.create__form');
+﻿var createForm = document.querySelector('.create__form');
 var dateInput = document.getElementById('createDateOfBirth');
 
-form.addEventListener('submit', function (event) {
+createForm.addEventListener('submit', function (event) {
     var dateValue = new Date(dateInput.value);
     var today = new Date();
     var minDate = new Date(1950, 0, 1); // Минимальная допустимая дата (1 января 1900 года)
@@ -22,17 +22,7 @@ form.addEventListener('submit', function (event) {
 });
 
 
-var button = document.getElementById('add__button').addEventListener('click', function () {
-    var createContainer = document.querySelector('.create__container');
-    var addButton = document.querySelector('.add__button');
-    if (createContainer.style.display == 'none'){
-        createContainer.style.display = 'grid';
-        addButton.innerHTML = "Закрыть";
-    } else {
-        createContainer.style.display = 'none';
-        addButton.innerHTML = "+Добавить";
-    }
-});
+var button = document.getElementById('add__button');
 
 function adjustFooter() {
     const contentHeight = document.querySelector('main').offsetHeight;
@@ -40,7 +30,7 @@ function adjustFooter() {
     const windowHeight = window.innerHeight;
     const footer = document.querySelector('footer');
 
-    if (contentHeight+headerHeight < windowHeight) {
+    if (contentHeight+headerHeight+100 < windowHeight) {
         footer.style.position = 'fixed';
         footer.style.bottom = '0';
     } else {
@@ -50,4 +40,3 @@ function adjustFooter() {
 
 button.addEventListener("change", adjustFooter);
 window.addEventListener("load", adjustFooter);
-

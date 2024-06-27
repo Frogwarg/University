@@ -1,0 +1,108 @@
+﻿@model University.Models.SubjectsViewModel
+
+<form class="filter__form" asp-action="SearchSubjects" asp-controller="Subject" method="get">
+    <div>
+        <label>Название: </label>
+        <input type="text" name="searchSubject" placeholder="Название предмета..." value="@Model.SearchSubject" />
+        <input type="submit" value="Поиск" />
+    </div>
+</form>
+
+<table>
+    <caption>Предметы</caption>
+    <thead>
+        <td>Наименование</td>
+        <td colspan="2">Действия</td>
+    </thead>
+    @if (Model.FilteredSubjects != null && Model.FilteredSubjects.Any())
+    {
+        @foreach (var subject in Model.FilteredSubjects)
+        {
+            <tr>
+                <td>@subject.Name</td>
+                <td><button type="button" class="update__button" data-id="@subject.Id" data-name="@subject.Name">Изменить</button></td>
+                <td><a asp-action="DeleteSubject" asp-controller="Subject" asp-route-SubjectID="@subject.Id">Удалить</a></td>
+            </tr>
+        }
+    }
+    else
+    {
+        <tfoot><td colspan="2">Результатов нет</td></tfoot>
+    }
+</table>
+<div class="add__button_container">
+    <button type="button" id="add__button" class="add__button">+Добавить</button>
+</div>
+
+<div class="create__container" style="display: none;">
+    <form class="create__form" asp-action="CreateSubject" asp-controller="Subject" method="post">
+        <p class="create__name">Название: </p>
+        <input name="createName" placeholder="Название..." required>
+        <input class="create__btn" type="submit" value="Создать предмет">
+    </form>
+</div>
+
+<div class="update__container" style="display: none;">
+    <form class="update__form" asp-action="UpdateSubject" asp-controller="Subject" method="post">
+        <input type="hidden" name="subjectId" id="updateSubjectId" />
+        <p class="create__name">Название: </p>
+        <input name="updateName" id="updateSubjectName" placeholder="Название...">
+        <input class="update__btn" type="submit" value="Обновить информацию">
+    </form>
+</div>
+
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            $('.update__button').on('click', function() {
+                var subjectId = $(this).data('id');
+                var subjectName = $(this).data('name');
+                console.log(subjectName);
+
+                $('#updateSubjectId').val(subjectId);
+                $('#updateSubjectName').val(subjectName);
+
+                $('#add__button').text('Закрыть');
+                if (!$('.update__container').is(':visible')) {
+                    $('.create__container').hide();
+                    $('.update__container').show();
+                }
+            });
+            $('#add__button').on('click', function () {
+                if (!$('.create__container').is(':visible') && !$('.update__container').is(':visible')) {
+                    $('.create__container').show();
+                    $('#add__button').text('Закрыть');
+                } else if ($('.create__container').is(':visible')) {
+                    $('.create__container').hide();
+                    $('#add__button').text('+Добавить');
+                } else if ($('.update__container').is(':visible')) {
+                    $('.update__container').hide();
+                    $('#add__button').text('+Добавить');
+                }
+            });
+            function verifySubjectName(form, nameField, event) {
+                $.ajax({
+                    url: '/Subject/VerifySubjectName',
+                    type: 'GET',
+                    data: { createName: form.find(`input[name="${nameField}"]`).val() },
+                    async: false,
+                    success: function (result) {
+                        if (!result) {
+                            // Имя не уникально, предотвращаем отправку формы
+                            event.preventDefault();
+                            alert('Название предмета должно быть уникальным.');
+                        }
+                    }
+                });
+            }
+
+            $('form.create__form').submit(function (event) {
+                verifySubjectName($(this), 'createName', event);
+            });
+
+            $('form.update__form').submit(function (event) {
+                verifySubjectName($(this), 'updateName', event);
+            });
+        });
+    </script>
+}
