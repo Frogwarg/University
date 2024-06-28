@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using University.Models;
 using University.ViewModels;
@@ -9,15 +10,19 @@ namespace University.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IEmailSender _emailSender;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IEmailSender emailSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _userManager = userManager;
+            _emailSender = emailSender;
         }
         [HttpGet]
         public IActionResult Register()
         {
+            ViewData["Title"] = "Регистрация";
             return View();
         }
         [HttpPost]
@@ -37,12 +42,14 @@ namespace University.Controllers
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
             }
+            ViewData["Title"] = "Регистрация";
             return View(model);
         }
 
         [HttpGet]
         public IActionResult Login()
         {
+            ViewData["Title"] = "Вход";
             return View();
         }
 
@@ -58,6 +65,7 @@ namespace University.Controllers
                 }
                 ModelState.AddModelError(string.Empty, "Попытка входа не удалась.");
             }
+            ViewData["Title"] = "Вход";
             return View(model);
         }
 
@@ -66,6 +74,93 @@ namespace University.Controllers
         {
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
+        }
+
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            ViewData["Title"] = "Забыли пароль";
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                // Не раскрываем информацию о пользователе
+                return RedirectToAction(nameof(ForgotPasswordConfirmation));
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var callbackUrl = Url.Action("ResetPassword", "Account", new { token, email = user.Email }, protocol: HttpContext.Request.Scheme);
+
+            await _emailSender.SendEmailAsync(model.Email, "Восстановление пароля",
+                $"Восстановите пароль, перейдя по этой <a href='{callbackUrl}'>ссылке</a>.");
+
+            ViewData["Title"] = "Забыли пароль";
+            return RedirectToAction(nameof(ForgotPasswordConfirmation));
+        }
+
+        public IActionResult ForgotPasswordConfirmation()
+        {
+            ViewData["Title"] = "Письмо отправлено";
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult ResetPassword(string token = null)
+        {
+            if (token == null)
+            {
+                // Обработка отсутствия токена
+                return BadRequest("A token must be supplied for password reset.");
+            }
+
+            var model = new ResetPasswordViewModel { Token = token };
+
+            ViewData["Title"] = "Сброс пароля";
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                // Не раскрываем информацию о пользователе
+                ViewData["Title"] = "Пароль сброшен";
+                return RedirectToAction(nameof(ResetPasswordConfirmation));
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, model.Token, model.Password);
+            if (result.Succeeded)
+            {
+                ViewData["Title"] = "Пароль сброшен";
+                return RedirectToAction(nameof(ResetPasswordConfirmation));
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            ViewData["Title"] = "Сброс пароля";
+            return View(model);
+        }
+
+        public IActionResult ResetPasswordConfirmation()
+        {
+            ViewData["Title"] = "Пароль сброшен";
+            return View();
         }
     }
 }

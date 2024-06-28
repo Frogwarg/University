@@ -1,10 +1,9 @@
 using University.Models;
 using Microsoft.EntityFrameworkCore;
 using University;
-using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
-using University.Areas.Identity.Data;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using System.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,15 +13,15 @@ builder.Services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(b
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
         .AddEntityFrameworkStores<ApplicationContext>()
         .AddDefaultTokenProviders();
-
-//builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-//    .AddRoles<IdentityRole>()
-//    .AddEntityFrameworkStores<ApplicationContext>();
-
 builder.Services.AddRazorPages();
+
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 var app = builder.Build();
 

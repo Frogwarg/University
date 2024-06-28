@@ -1,10 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Reflection;
 using University.Models;
 using University.ViewModels;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace University.Controllers
 {

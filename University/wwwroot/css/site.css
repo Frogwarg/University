@@ -107,19 +107,29 @@ main {
     flex-direction:column;
     align-items:center;
 }
-.col-md-4>form{
-    width:200px;
+.auto-reset,.auto-forgot,.auto-reset-confirm {
+    width: 200px;
+    height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.auto-reset-confirm{
     height:200px;
-    display:flex;
-    flex-direction:column;
-    justify-content:space-between;
+}
+.col-md-4 > form {
+    width: 200px;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 .form-group{
     display:grid;
 }
-.form-group>.btn{
-    justify-self:center;
-}
+    .form-group > .btn, .form-group>.auto-forgot-btn {
+        justify-self: center;
+    }
 
 table {
     margin: 0 auto;
