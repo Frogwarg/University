@@ -1,4 +1,11 @@
-﻿@model University.Models.GroupsViewModel
+﻿@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+@model University.ViewModels.GroupsViewModel
+
+@{
+    var user = await UserManager.GetUserAsync(User);
+    var isAdmin = user != null ? await UserManager.IsInRoleAsync(user, "Admin") : false;
+}
 
 <form class="filter__form" asp-action="SearchGroups" asp-controller="Group" method="get">
     <div>
@@ -10,7 +17,7 @@
             <option value="">Все курсы</option>
             @foreach (var course in Model.UniqueCourses)
             {
-                <option value="@course" selected="@(Model.SelectedCourse == course)">@course.Name</option>
+                <option value="@course.Id" selected="@(Model.SelectedCourse == course)">@course.Name</option>
             }
         </select>
         <input type="submit" value="Поиск" />
@@ -25,7 +32,10 @@
         <td>Курс</td>
         <td>Куратор</td>
         <td>Студенты</td>
-        <td colspan="2">Действия</td>
+        @if (isAdmin)
+        {
+            <td colspan="2">Действия</td>
+        }
     </thead>
     @if (Model.FilteredGroups != null && Model.FilteredGroups.Any())
     {
@@ -46,112 +56,119 @@
                     }
                 </td>
                 <td><a asp-controller="Student" asp-action="SearchStudents" asp-route-searchGroup="@group.Name">Просмотреть</a></td>
-                <td>
-                    <button type="button" class="update__button"
-                            data-id="@group.Id"
-                            data-name="@group.Name"
-                            data-description="@group.Description"
-                            data-course="@group.CourseId"
-                            data-curator="@group.CuratorId">
-                        Изменить
-                    </button>
-                </td>
-                <td><a asp-action="DeleteGroup" asp-controller="Group" asp-route-GroupID="@group.Id">Удалить</a></td>
+                @if (isAdmin)
+                {
+                    <td>
+                        <button type="button" class="update__button"
+                                data-id="@group.Id"
+                                data-name="@group.Name"
+                                data-description="@group.Description"
+                                data-course="@group.CourseId"
+                                data-curator="@group.CuratorId">
+                            Изменить
+                        </button>
+                    </td>
+                    <td><a asp-action="DeleteGroup" asp-controller="Group" asp-route-GroupID="@group.Id">Удалить</a></td>
+                }
             </tr>
         }
     }
     else
     {
-        <tfoot><td  colspan="6">Результатов нет</td></tfoot>
+        <tfoot><td  colspan="@(isAdmin ?7:5)">Результатов нет</td></tfoot>
     }
 </table>
-<div class="add__button_container">
-    <button type="button" id="add__button" class="add__button">+Добавить</button>
-</div>
 
-<div class="create__container" style="display: none;">
-    <form class="create__form" asp-action="CreateGroup" asp-controller="Group" method="post">
-        <p class="create__name">Наименование группы: </p>
-        <input name="createName" placeholder="Наименование..." required>
-        <p class="create__description">Описание:</p>
-        <input name="createDesc" placeholder="Описание...">
-        <p class="create__course">Курс:</p>
-        @if (Model.UniqueCourses.Count != 0)
-        {
-            <select name="createCourse" id="" required>
-                @foreach (var course in Model.UniqueCourses)
-                {
-                    <option value="@course.Id">@course.Name</option>
-                }
-            </select>
-        }
-        else
-        {
-            <button type="button" class="create__course" onclick="location.href='@Url.Action("Courses", "Course")'">Создать курс</button>
-        }
-        <p class="create__teacher">Куратор (свободный): </p>
-        @{
-            List<Teacher> freeTeachers = Model.Teachers.Where(t => t.Group == null).ToList();
-        }
-        @if (@freeTeachers.Count != 0)
-        {
-            <select name="createCurator" id="" required>
-                @foreach (var teacher in Model.Teachers.Where(t => t.Group == null))
-                {
-                    <option value="@teacher.Id">@(@teacher.Surname + " " + teacher.Name + " " + teacher.Patronymic)</option>
-                }
-            </select>
-            <input class="create__btn" type="submit" value="Создать группу">
-        }
-        else
-        {
-            <button type="button" class="create__teacher" onclick="location.href='@Url.Action("Teachers", "Teacher")'">Добавить преподавателя</button>
-        }
-    </form>
-</div>
+@if (isAdmin)
+{
+    <div class="add__button_container">
+        <button type="button" id="add__button" class="add__button">+Добавить</button>
+    </div>
 
-<div class="update__container" style="display: none;">
-    <form class="update__form" asp-action="UpdateGroup" asp-controller="Group" method="post">
-        <input type="hidden" name="updateId" id="updateGroupId" />
-        <p class="update__name">Наименование группы: </p>
-        <input name="updateName" placeholder="Наименование..." required>
-        <p class="update__description">Описание:</p>
-        <input name="updateDesc" placeholder="Описание...">
-        <p class="update__course">Курс:</p>
-        @if (Model.UniqueCourses.Count != 0)
-        {
-            <select name="updateCourse" id="" required>
-                @foreach (var course in Model.UniqueCourses)
-                {
-                    <option value="@course.Id">@course.Name</option>
-                }
-            </select>
-        }
-        else
-        {
-            <button type="button" class="create__course" onclick="location.href='@Url.Action("Courses", "Course")'">Создать курс</button>
-        }
-        <p class="update__teacher">Куратор (свободный): </p>
-        @{
-            List<Teacher> freTeachers = Model.Teachers.Where(t => t.Group == null).ToList();
-        }
-        @if (@freTeachers.Count != 0)
-        {
-            <select name="updateCurator" id="updateCurator">
-                <option selected>Оставить текущего</option>
-                @foreach (var teacher in Model.Teachers.Where(t => t.Group == null))
-                {
-                    <option value="@teacher.Id">@(@teacher.Surname + " " + teacher.Name + " " + teacher.Patronymic)</option>
-                }
-            </select>
-            <input class="update__btn" type="submit" value="Обновить информацию">
-        }
-        else
-        {
-            <button type="button" class="create__teacher" onclick="location.href='@Url.Action("Teachers", "Teacher")'">Добавить преподавателя</button>
-        }
-    </form>
-</div>
+    <div class="create__container" style="display: none;">
+        <form class="create__form" asp-action="CreateGroup" asp-controller="Group" method="post">
+            <p class="create__name">Наименование группы: </p>
+            <input name="createName" placeholder="Наименование..." required>
+            <p class="create__description">Описание:</p>
+            <input name="createDesc" placeholder="Описание...">
+            <p class="create__course">Курс:</p>
+            @if (Model.UniqueCourses.Count != 0)
+            {
+                <select name="createCourse" id="" required>
+                    @foreach (var course in Model.UniqueCourses)
+                    {
+                        <option value="@course.Id">@course.Name</option>
+                    }
+                </select>
+            }
+            else
+            {
+                <button type="button" class="create__course" onclick="location.href='@Url.Action("Courses", "Course")'">Создать курс</button>
+            }
+            <p class="create__teacher">Куратор (свободный): </p>
+            @{
+                List<Teacher> freeTeachers = Model.Teachers.Where(t => t.Group == null).ToList();
+            }
+            @if (@freeTeachers.Count != 0)
+            {
+                <select name="createCurator" id="" required>
+                    @foreach (var teacher in Model.Teachers.Where(t => t.Group == null))
+                    {
+                        <option value="@teacher.Id">@(@teacher.Surname + " " + teacher.Name + " " + teacher.Patronymic)</option>
+                    }
+                </select>
+                <input class="create__btn" type="submit" value="Создать группу">
+            }
+            else
+            {
+                <button type="button" class="create__teacher" onclick="location.href='@Url.Action("Teachers", "Teacher")'">Добавить преподавателя</button>
+            }
+        </form>
+    </div>
+
+    <div class="update__container" style="display: none;">
+        <form class="update__form" asp-action="UpdateGroup" asp-controller="Group" method="post">
+            <input type="hidden" name="updateId" id="updateGroupId" />
+            <p class="update__name">Наименование группы: </p>
+            <input name="updateName" placeholder="Наименование..." required>
+            <p class="update__description">Описание:</p>
+            <input name="updateDesc" placeholder="Описание...">
+            <p class="update__course">Курс:</p>
+            @if (Model.UniqueCourses.Count != 0)
+            {
+                <select name="updateCourse" id="" required>
+                    @foreach (var course in Model.UniqueCourses)
+                    {
+                        <option value="@course.Id">@course.Name</option>
+                    }
+                </select>
+            }
+            else
+            {
+                <button type="button" class="create__course" onclick="location.href='@Url.Action("Courses", "Course")'">Создать курс</button>
+            }
+            <p class="update__teacher">Куратор (свободный): </p>
+            @{
+                List<Teacher> freTeachers = Model.Teachers.Where(t => t.Group == null).ToList();
+            }
+            @if (@freTeachers.Count != 0)
+            {
+                <select name="updateCurator" id="updateCurator">
+                    <option selected>Оставить текущего</option>
+                    @foreach (var teacher in Model.Teachers.Where(t => t.Group == null))
+                    {
+                        <option value="@teacher.Id">@(@teacher.Surname + " " + teacher.Name + " " + teacher.Patronymic)</option>
+                    }
+                </select>
+                <input class="update__btn" type="submit" value="Обновить информацию">
+            }
+            else
+            {
+                <button type="button" class="create__teacher" onclick="location.href='@Url.Action("Teachers", "Teacher")'">Добавить преподавателя</button>
+            }
+        </form>
+    </div>
+}
 
 @section Scripts{
     <script>

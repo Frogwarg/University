@@ -1,8 +1,13 @@
-﻿@{
+﻿@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+@model University.ViewModels.TeachersViewModel
+
+@{
+    var user = await UserManager.GetUserAsync(User);
+    var isAdmin = user != null ? await UserManager.IsInRoleAsync(user, "Admin") : false;
     string degrees="";
     string subjects = "";
 }
-@model University.Models.TeachersViewModel
 @if (Model.SelectedTeacher != null)
 {
     Teacher teacher = Model.SelectedTeacher;
@@ -103,12 +108,15 @@ else
     <table>
         <caption>Преподаватели</caption>
         <thead>
-        <td>ФИО</td>
-        <td>Дата рождения</td>
-        <td>Ученая степень</td>
-        <td>Описание</td>
-        <td>Предметы</td>
-        <td colspan="2">Действия</td>
+            <td>ФИО</td>
+            <td>Дата рождения</td>
+            <td>Ученая степень</td>
+            <td>Описание</td>
+            <td>Предметы</td>
+            @if (isAdmin)
+            {
+                <td colspan="2">Действия</td>
+            }
         </thead>
 
         @if (Model.FilteredTeachers != null && Model.FilteredTeachers.Any())
@@ -143,109 +151,117 @@ else
                         }
                     }
                     <td class="table__col_subjects">@(!string.IsNullOrEmpty(subjects) ? subjects : "Пусто")</td>
-                    <td>
-                        <button type="button" class="update__button"
-                                data-id="@teacher.Id"
-                                data-name="@teacher.Name"
-                                data-surname="@teacher.Surname"
-                                data-patronymic="@teacher.Patronymic"
-                                data-dateofbirth="@teacher.DateOfBirth.ToString("o")"
-                                data-degrees="@string.Join(",", teacher.Degrees)"
-                                data-description="@teacher.Description"
-                                data-subjects="@string.Join(",", teacher.Subjects.Select(s => s.Id))">
-                            Изменить
-                        </button>
-                    </td>
-                    <td><a asp-action="DeleteTeacher" asp-controller="Teacher" asp-route-TeacherID="@teacher.Id">Удалить</a></td>
+                    @if (isAdmin)
+                    {
+                        <td>
+                            <button type="button" class="update__button"
+                                    data-id="@teacher.Id"
+                                    data-name="@teacher.Name"
+                                    data-surname="@teacher.Surname"
+                                    data-patronymic="@teacher.Patronymic"
+                                    data-dateofbirth="@teacher.DateOfBirth.ToString("o")"
+                                    data-degrees="@string.Join(",", teacher.Degrees)"
+                                    data-description="@teacher.Description"
+                                    data-subjects="@string.Join(",", teacher.Subjects.Select(s => s.Id))">
+                                Изменить
+                            </button>
+                        </td>
+                        <td><a asp-action="DeleteTeacher" asp-controller="Teacher" asp-route-TeacherID="@teacher.Id">Удалить</a></td>
+                    }
                 </tr>
             }
         }
         else
         {
             <tfoot>
-            <td colspan="6">Результатов нет</td></tfoot>
+            <td colspan="@(isAdmin?6:4)">Результатов нет</td></tfoot>
         }
     </table>
-    <div class="add__button_container">
-        <button type="button" id="add__button" class="add__button">+Добавить</button>
-    </div>
 
-    <div class="create__container" style="display: none;">
-        <form class="create__form" asp-action="CreateTeacher" asp-controller="Teacher" method="post" enctype="multipart/form-data">
-            <p class="create__name">Имя: </p>
-            <input name="createName" placeholder="Имя..." required>
-            <p class="create__surname">Фамилия:</p>
-            <input name="createSurname" placeholder="Фамилия..." required>
-            <p class="create__patronymic">Отчество (если есть):</p>
-            <input name="createPatronymic" placeholder="Отчество...">
-            <p class="create__dateOfBirth">Дата рождения:</p>
-            <input type="date" id="createDateOfBirth" name="createDateOfBirth" placeholder="Дата рождения..." required>
-            <p class="create__degrees">Степени (если есть):</p>
-            <input type="text" name="createDegrees" placeholder="Степени...">
-            <p class="create__description">Описание:</p>
-            <input name="createDesc" placeholder="Описание...">
-            <p class="create__photo">Фотография:</p>
-            <input type="file" name="createImage" placeholder="Фото...">
-            <p class="create__subjects">Предметы:</p>
-            @if(Model.Subjects.Count != 0)
-            {
-                <div class="create__subjects_container">
-                    @foreach (var subject in Model.Subjects)
-                    {
-                        <div class="create__subjects_item">
-                            <input type="checkbox" name="crSelectedSubjects" value="@subject.Id" />
-                            <label>@subject.Name</label>
-                            <input type="hidden" name="crSelectedSubjects.Index" value="@subject.Id" />
-                        </div>
-                    }
-                </div>
-            }
-            else
-            {
-                <button type="button" class="create__subject" onclick="location.href='@Url.Action("Subjects", "Subject")'">Создать предмет</button>
-            }
-            <input class="create__btn" type="submit" value="Добавить преподавателя">
-        </form>
-    </div>
+    @if (isAdmin)
+    {
 
-    <div class="update__container" style="display: none;">
-        <form class="update__form" asp-action="UpdateTeacher" asp-controller="Teacher" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="updateId" id="updateTeacherId" />
-            <p class="update__name">Имя: </p>
-            <input name="updateName" placeholder="Имя..." required>
-            <p class="update__surname">Фамилия:</p>
-            <input name="updateSurname" placeholder="Фамилия..." required>
-            <p class="update__patronymic">Отчество (если есть):</p>
-            <input name="updatePatronymic" placeholder="Отчество...">
-            <p class="update__dateOfBirth">Дата рождения:</p>
-            <input type="date" id="updateDateOfBirth" name="updateDateOfBirth" placeholder="Дата рождения..." required>
-            <p class="update__degrees">Степени (если есть):</p>
-            <input type="text" name="updateDegrees" placeholder="Степени...">
-            <p class="update__description">Описание:</p>
-            <input name="updateDesc" placeholder="Описание...">
-            <p class="update__photo">Фотография:</p>
-            <input type="file" name="currentImagePath" placeholder="Фото...">
-            <p class="update__subjects">Предметы:</p>
-            @if (Model.Subjects.Count != 0)
-            {
-                <div class="create__subjects_container">
-                    @foreach (var subject in Model.Subjects)
-                    {
-                        <div class="create__subjects_item">
-                            <input type="checkbox" name="SelectedSubjects" value="@subject.Id" />
-                            <label>@subject.Name</label>
-                            <input type="hidden" name="SelectedSubjects.Index" value="@subject.Id" />
-                        </div>
-                    }
-                </div>
-            }
-            else
-            {
-                <button type="button" class="create__subject" onclick="location.href='@Url.Action("Subjects", "Subject")'">Создать предмет</button>
-            }
-            <input class="update__btn" type="submit" value="Обновить информацию">
-        </form>
-    </div>
+        <div class="add__button_container">
+            <button type="button" id="add__button" class="add__button">+Добавить</button>
+        </div>
+
+        <div class="create__container" style="display: none;">
+            <form class="create__form" asp-action="CreateTeacher" asp-controller="Teacher" method="post" enctype="multipart/form-data">
+                <p class="create__name">Имя: </p>
+                <input name="createName" placeholder="Имя..." required>
+                <p class="create__surname">Фамилия:</p>
+                <input name="createSurname" placeholder="Фамилия..." required>
+                <p class="create__patronymic">Отчество (если есть):</p>
+                <input name="createPatronymic" placeholder="Отчество...">
+                <p class="create__dateOfBirth">Дата рождения:</p>
+                <input type="date" id="createDateOfBirth" name="createDateOfBirth" placeholder="Дата рождения..." required>
+                <p class="create__degrees">Степени (если есть):</p>
+                <input type="text" name="createDegrees" placeholder="Степени...">
+                <p class="create__description">Описание:</p>
+                <input name="createDesc" placeholder="Описание...">
+                <p class="create__photo">Фотография:</p>
+                <input type="file" name="createImage" placeholder="Фото...">
+                <p class="create__subjects">Предметы:</p>
+                @if (Model.Subjects.Count != 0)
+                {
+                    <div class="create__subjects_container">
+                        @foreach (var subject in Model.Subjects)
+                        {
+                            <div class="create__subjects_item">
+                                <input type="checkbox" name="crSelectedSubjects" value="@subject.Id" />
+                                <label>@subject.Name</label>
+                                <input type="hidden" name="crSelectedSubjects.Index" value="@subject.Id" />
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <button type="button" class="create__subject" onclick="location.href='@Url.Action("Subjects", "Subject")'">Создать предмет</button>
+                }
+                <input class="create__btn" type="submit" value="Добавить преподавателя">
+            </form>
+        </div>
+
+        <div class="update__container" style="display: none;">
+            <form class="update__form" asp-action="UpdateTeacher" asp-controller="Teacher" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="updateId" id="updateTeacherId" />
+                <p class="update__name">Имя: </p>
+                <input name="updateName" placeholder="Имя..." required>
+                <p class="update__surname">Фамилия:</p>
+                <input name="updateSurname" placeholder="Фамилия..." required>
+                <p class="update__patronymic">Отчество (если есть):</p>
+                <input name="updatePatronymic" placeholder="Отчество...">
+                <p class="update__dateOfBirth">Дата рождения:</p>
+                <input type="date" id="updateDateOfBirth" name="updateDateOfBirth" placeholder="Дата рождения..." required>
+                <p class="update__degrees">Степени (если есть):</p>
+                <input type="text" name="updateDegrees" placeholder="Степени...">
+                <p class="update__description">Описание:</p>
+                <input name="updateDesc" placeholder="Описание...">
+                <p class="update__photo">Фотография:</p>
+                <input type="file" name="currentImagePath" placeholder="Фото...">
+                <p class="update__subjects">Предметы:</p>
+                @if (Model.Subjects.Count != 0)
+                {
+                    <div class="create__subjects_container">
+                        @foreach (var subject in Model.Subjects)
+                        {
+                            <div class="create__subjects_item">
+                                <input type="checkbox" name="SelectedSubjects" value="@subject.Id" />
+                                <label>@subject.Name</label>
+                                <input type="hidden" name="SelectedSubjects.Index" value="@subject.Id" />
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <button type="button" class="create__subject" onclick="location.href='@Url.Action("Subjects", "Subject")'">Создать предмет</button>
+                }
+                <input class="update__btn" type="submit" value="Обновить информацию">
+            </form>
+        </div>
+    }
 }
 @section Scripts{
     <script>

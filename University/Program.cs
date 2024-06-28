@@ -2,11 +2,24 @@ using University.Models;
 using Microsoft.EntityFrameworkCore;
 using University;
 using Microsoft.Data.SqlClient;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
+using University.Areas.Identity.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 //string connection = "Host=localhost;Port=5432;Database=UniversityDB;Username=postgres;Password=danik";
 builder.Services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+        .AddEntityFrameworkStores<ApplicationContext>()
+        .AddDefaultTokenProviders();
+
+//builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+//    .AddRoles<IdentityRole>()
+//    .AddEntityFrameworkStores<ApplicationContext>();
+
+builder.Services.AddRazorPages();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -15,8 +28,12 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-    DataInitializer.Initialize(dbContext);  // Заполнение базы данных
+    var services = scope.ServiceProvider;
+    var dbContext = services.GetRequiredService<ApplicationContext>();
+    DataInitializer.Initialize(dbContext);
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+    await CreateRolesAndAdminAsync(roleManager, userManager);
     //dbContext.Database.Migrate();
 }
 
@@ -32,6 +49,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
@@ -40,4 +58,36 @@ app.MapControllerRoute(
     defaults: new { controller = "Home", action = "Index" }
 );
 
+app.MapRazorPages();
+
 app.Run();
+
+async Task CreateRolesAndAdminAsync(RoleManager<IdentityRole> roleManager, UserManager<ApplicationUser> userManager)
+{
+    string[] roleNames = { "Admin", "User" };
+    foreach (var roleName in roleNames)
+    {
+        var roleExists = await roleManager.RoleExistsAsync(roleName);
+        if (!roleExists)
+        {
+            await roleManager.CreateAsync(new IdentityRole(roleName));
+        }
+    }
+
+    // Создание администратора
+    var adminEmail = "admin@example.com";
+    var adminUser = await userManager.FindByEmailAsync(adminEmail);
+    if (adminUser == null)
+    {
+        var admin = new ApplicationUser
+        {
+            UserName = adminEmail,
+            Email = adminEmail
+        };
+        var createAdminResult = await userManager.CreateAsync(admin, "AdminPassword123!");
+        if (createAdminResult.Succeeded)
+        {
+            await userManager.AddToRoleAsync(admin, "Admin");
+        }
+    }
+}

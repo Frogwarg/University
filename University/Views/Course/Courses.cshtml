@@ -1,4 +1,11 @@
-﻿@model University.Models.CoursesViewModel
+﻿@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+@model University.ViewModels.CoursesViewModel
+
+@{
+    var user = await UserManager.GetUserAsync(User);
+    var isAdmin = user!=null ? await UserManager.IsInRoleAsync(user, "Admin") : false;
+}
 
 <form class="filter__form" asp-action="SearchCourses" asp-controller="Course" method="get">
     <div>
@@ -13,7 +20,10 @@
     <thead>
     <td>Наименование</td>
     <td>Описание</td>
-    <td colspan="2">Действия</td>
+        @if (isAdmin)
+        {
+            <td colspan="2">Действия</td>
+        }
     </thead>
     @if (Model.FilteredCourses != null && Model.FilteredCourses.Any())
     {
@@ -22,41 +32,47 @@
             <tr>
                 <td>@course.Name</td>
                 <td class="table__col_description">@(!string.IsNullOrEmpty(@course.Description) ? @course.Description : "*Пусто*")</td>
-                <td><button type="button" class="update__button" data-id="@course.Id" data-name="@course.Name" data-description="@course.Description">Изменить</button></td>
-                <td><a asp-action="DeleteCourse" asp-controller="Course" asp-route-CourseID="@course.Id">Удалить</a></td>
+                @if (isAdmin)
+                {
+                    <td><button type="button" class="update__button" data-id="@course.Id" data-name="@course.Name" data-description="@course.Description">Изменить</button></td>
+                    <td><a asp-action="DeleteCourse" asp-controller="Course" asp-route-CourseID="@course.Id">Удалить</a></td>
+                }
             </tr>
         }
     }
     else
     {
-        <tfoot>
-        <td colspan="3">Результатов нет</td></tfoot>
+        <tfoot><td colspan="@(isAdmin ? 4:2)">Результатов нет</td></tfoot>
     }
 </table>
-<div class="add__button_container">
-    <button type="button" id="add__button" class="add__button">+Добавить</button>
-</div>
 
-<div class="create__container" style="display: none;">
-    <form class="create__form" asp-action="CreateCourse" asp-controller="Course" method="post">
-        <p class="create__name">Наименование курса: </p>
-        <input name="createName" placeholder="Наименование..." required>
-        <p class="create__description">Описание:</p>
-        <input name="createDesc" placeholder="Описание...">
-        <input class="create__btn" type="submit" value="Создать курс">
-    </form>
-</div>
+@if (isAdmin)
+{
+    <div class="add__button_container">
+        <button type="button" id="add__button" class="add__button">+Добавить</button>
+    </div>
 
-<div class="update__container" style="display: none;">
-    <form class="update__form" asp-action="UpdateCourse" asp-controller="Course" method="post">
-        <input type="hidden" name="updateId" id="updateCourseId" />
-        <p class="update__name">Наименование курса: </p>
-        <input name="updateName" placeholder="Наименование..." required>
-        <p class="update__description">Описание:</p>
-        <input name="updateDesc" placeholder="Описание...">
-        <input class="update__btn" type="submit" value="Обновить информацию">
-    </form>
-</div>
+    <div class="create__container" style="display: none;">
+        <form class="create__form" asp-action="CreateCourse" asp-controller="Course" method="post">
+            <p class="create__name">Наименование курса: </p>
+            <input name="createName" placeholder="Наименование..." required>
+            <p class="create__description">Описание:</p>
+            <input name="createDesc" placeholder="Описание...">
+            <input class="create__btn" type="submit" value="Создать курс">
+        </form>
+    </div>
+
+    <div class="update__container" style="display: none;">
+        <form class="update__form" asp-action="UpdateCourse" asp-controller="Course" method="post">
+            <input type="hidden" name="updateId" id="updateCourseId" />
+            <p class="update__name">Наименование курса: </p>
+            <input name="updateName" placeholder="Наименование..." required>
+            <p class="update__description">Описание:</p>
+            <input name="updateDesc" placeholder="Описание...">
+            <input class="update__btn" type="submit" value="Обновить информацию">
+        </form>
+    </div>
+}
 
 @section Scripts{
     <script>

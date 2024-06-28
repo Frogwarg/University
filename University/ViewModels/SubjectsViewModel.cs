@@ -1,4 +1,6 @@
-﻿namespace University.Models
+﻿using University.Models;
+
+namespace University.ViewModels
 {
     public class SubjectsViewModel
     {

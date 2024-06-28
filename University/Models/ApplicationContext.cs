@@ -1,9 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using University.Configurations;
 
 namespace University.Models
 {
-    public class ApplicationContext: DbContext
+    public class ApplicationUser : IdentityUser
+    {
+        
+    }
+
+    public class ApplicationContext: IdentityDbContext<ApplicationUser>
     {
         public DbSet<Student> Students { get; set; } = null!;
         public DbSet<Subject> Subjects { get; set; } = null!;

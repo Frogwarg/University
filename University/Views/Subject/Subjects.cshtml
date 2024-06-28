@@ -1,4 +1,11 @@
-﻿@model University.Models.SubjectsViewModel
+﻿@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+@model University.ViewModels.SubjectsViewModel
+
+@{
+    var user = await UserManager.GetUserAsync(User);
+    var isAdmin = user != null ? await UserManager.IsInRoleAsync(user, "Admin") : false;
+}
 
 <form class="filter__form" asp-action="SearchSubjects" asp-controller="Subject" method="get">
     <div>
@@ -12,7 +19,10 @@
     <caption>Предметы</caption>
     <thead>
         <td>Наименование</td>
-        <td colspan="2">Действия</td>
+        @if (isAdmin)
+        {
+            <td colspan="2">Действия</td>
+        }
     </thead>
     @if (Model.FilteredSubjects != null && Model.FilteredSubjects.Any())
     {
@@ -20,36 +30,43 @@
         {
             <tr>
                 <td>@subject.Name</td>
-                <td><button type="button" class="update__button" data-id="@subject.Id" data-name="@subject.Name">Изменить</button></td>
-                <td><a asp-action="DeleteSubject" asp-controller="Subject" asp-route-SubjectID="@subject.Id">Удалить</a></td>
+                @if (isAdmin)
+                {
+                    <td><button type="button" class="update__button" data-id="@subject.Id" data-name="@subject.Name">Изменить</button></td>
+                    <td><a asp-action="DeleteSubject" asp-controller="Subject" asp-route-SubjectID="@subject.Id">Удалить</a></td>
+                }
             </tr>
         }
     }
     else
     {
-        <tfoot><td colspan="2">Результатов нет</td></tfoot>
+        <tfoot><td colspan="@(isAdmin?3:1)">Результатов нет</td></tfoot>
     }
 </table>
-<div class="add__button_container">
-    <button type="button" id="add__button" class="add__button">+Добавить</button>
-</div>
 
-<div class="create__container" style="display: none;">
-    <form class="create__form" asp-action="CreateSubject" asp-controller="Subject" method="post">
-        <p class="create__name">Название: </p>
-        <input name="createName" placeholder="Название..." required>
-        <input class="create__btn" type="submit" value="Создать предмет">
-    </form>
-</div>
+@if (isAdmin)
+{
+    <div class="add__button_container">
+        <button type="button" id="add__button" class="add__button">+Добавить</button>
+    </div>
 
-<div class="update__container" style="display: none;">
-    <form class="update__form" asp-action="UpdateSubject" asp-controller="Subject" method="post">
-        <input type="hidden" name="subjectId" id="updateSubjectId" />
-        <p class="create__name">Название: </p>
-        <input name="updateName" id="updateSubjectName" placeholder="Название...">
-        <input class="update__btn" type="submit" value="Обновить информацию">
-    </form>
-</div>
+    <div class="create__container" style="display: none;">
+        <form class="create__form" asp-action="CreateSubject" asp-controller="Subject" method="post">
+            <p class="create__name">Название: </p>
+            <input name="createName" placeholder="Название..." required>
+            <input class="create__btn" type="submit" value="Создать предмет">
+        </form>
+    </div>
+
+    <div class="update__container" style="display: none;">
+        <form class="update__form" asp-action="UpdateSubject" asp-controller="Subject" method="post">
+            <input type="hidden" name="subjectId" id="updateSubjectId" />
+            <p class="create__name">Название: </p>
+            <input name="updateName" id="updateSubjectName" placeholder="Название...">
+            <input class="update__btn" type="submit" value="Обновить информацию">
+        </form>
+    </div>
+}
 
 @section Scripts{
     <script>

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using University.Models;
+using University.ViewModels;
 
 namespace University.Controllers
 {
@@ -16,7 +17,7 @@ namespace University.Controllers
             db = context;
         }
 
-        public async Task<IActionResult> Groups(Course? selectedCourse, string searchTerm)
+        public async Task<IActionResult> Groups(Guid? selectedCourse, string searchTerm)
         {
             var groups = await db.Groups.Include(g => g.Course).Include(g => g.Curator).ToListAsync();
 
@@ -32,11 +33,12 @@ namespace University.Controllers
             }
 
             List<Group> filteredGroups = groups;
+            Course selectedcourse = new Course();
 
-            if (selectedCourse != null && !string.IsNullOrEmpty(selectedCourse.Name))
+            if (selectedCourse != null && selectedCourse != Guid.Empty)
             {
-                Console.WriteLine("SelectedCourse.Name: " + selectedCourse.Name);
-                filteredGroups = filteredGroups.Where(g => g.Course.Name == selectedCourse.Name).ToList();
+                filteredGroups = filteredGroups.Where(g => g.Course.Id == selectedCourse).ToList();
+                selectedcourse = await db.Courses.FirstOrDefaultAsync(g => g.Id == selectedCourse);
             }
 
             if (!string.IsNullOrEmpty(searchTerm))
@@ -49,7 +51,7 @@ namespace University.Controllers
             {
                 Groups = groups,
                 UniqueCourses = uniqueCourses,
-                SelectedCourse = selectedCourse,
+                SelectedCourse = selectedcourse,
                 SearchTerm = searchTerm,
                 FilteredGroups = filteredGroups,
                 Teachers = db.Teachers.ToList()
@@ -59,7 +61,7 @@ namespace University.Controllers
             return View("Groups", model);
         }
         [HttpGet]
-        public async Task<IActionResult> SearchGroups(Course? selectedCourse, string searchTerm)
+        public async Task<IActionResult> SearchGroups(Guid? selectedCourse, string searchTerm)
         {
             return RedirectToAction("Groups", new { selectedCourse, searchTerm });
         }

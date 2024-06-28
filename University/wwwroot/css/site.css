@@ -39,6 +39,7 @@ header {
 .header__login > button {
     border: none;
     font-weight: bolder;
+    cursor:pointer;
 }
 
 .sign-up {
@@ -57,9 +58,15 @@ header {
     height: 35px;
 }
 
+.not-signed__container{
+    display:grid;
+    height:200px;
+    place-content:center;
+}
+
 main {
-    min-height:70vh;
-    flex:1;
+    min-height: 70vh;
+    flex: 1;
 }
 
 .main__categories {
@@ -94,6 +101,24 @@ main {
     height: 30px;
     display: flex;
     justify-content: center;
+}
+.auto__container{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+.col-md-4>form{
+    width:200px;
+    height:200px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+}
+.form-group{
+    display:grid;
+}
+.form-group>.btn{
+    justify-self:center;
 }
 
 table {

@@ -1,4 +1,9 @@
-﻿<!DOCTYPE html>
+﻿    @using Microsoft.AspNetCore.Identity
+
+    @inject SignInManager<ApplicationUser> SignInManager
+    @inject UserManager<ApplicationUser> UserManager
+
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="utf-8" />
@@ -13,36 +18,53 @@
             <nav class="header__nav">
                 <a asp-action="Index" asp-controller="Home" class="header__title">University</a>
                 <div class="header__login">
-                    <button type="submit" class="sign-up">Регистрация</button>
-                    <button type="submit" class="sign-in">Вход</button>
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        <p>Hello, @UserManager.GetUserName(User)!</p>
+                        <form id="logoutForm" asp-controller="Account" asp-action="Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                            <button id="logout" type="submit" class="nav-link btn btn-link text-dark border-0">Выйти из аккаунта</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <button type="button" class="sign-up" onclick="location.href='@Url.Action("Register", "Account")'">Регистрация</button>
+                        <button type="button" class="sign-in" onclick="location.href='@Url.Action("Login", "Account")'">Вход</button>
+                    }
                 </div>
             </nav>
         </div>
     </header>
     <main>
         <div class="container">
-            <div class="main__categories">
-                <div class="main__category" onclick="window.location.href='/Course/Courses';">
-                    <img src="~/images/course.png" alt="Лого курса" class="category__img">
-                    <p class="category__text">Курсы</p>
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <div class="main__categories">
+                    <div class="main__category" onclick="window.location.href='/Course/Courses';">
+                        <img src="~/images/course.png" alt="Лого курса" class="category__img">
+                        <p class="category__text">Курсы</p>
+                    </div>
+                    <div class="main__category" onclick="window.location.href='/Group/Groups';">
+                        <img src="~/images/group.png" alt="Лого группы" class="category__img">
+                        <p class="category__text">Группы</p>
+                    </div>
+                    <div class="main__category" onclick="window.location.href='/Student/Students';">
+                        <img src="~/images/student.png" alt="Лого студента" class="category__img">
+                        <p class="category__text">Студенты</p>
+                    </div>
+                    <div class="main__category" onclick="window.location.href='/Teacher/Teachers';">
+                        <img src="~/images/teacher.png" alt="Лого учителя" class="category__img">
+                        <p class="category__text">Преподаватели</p>
+                    </div>
+                    <div class="main__category" onclick="window.location.href='/Subject/Subjects';">
+                        <img src="~/images/subject.png" alt="Лого предмета" class="category__img">
+                        <p class="category__text">Предметы</p>
+                    </div>
                 </div>
-                <div class="main__category" onclick="window.location.href='/Group/Groups';">
-                    <img src="~/images/group.png" alt="Лого группы" class="category__img">
-                    <p class="category__text">Группы</p>
-                </div>
-                <div class="main__category" onclick="window.location.href='/Student/Students';">
-                    <img src="~/images/student.png" alt="Лого студента" class="category__img">
-                    <p class="category__text">Студенты</p>
-                </div>
-                <div class="main__category" onclick="window.location.href='/Teacher/Teachers';">
-                    <img src="~/images/teacher.png" alt="Лого учителя" class="category__img">
-                    <p class="category__text">Преподаватели</p>
-                </div>
-                <div class="main__category" onclick="window.location.href='/Subject/Subjects';">
-                    <img src="~/images/subject.png" alt="Лого предмета" class="category__img">
-                    <p class="category__text">Предметы</p>
-                </div>
-            </div>
+            }
+            else
+            {
+                <partial name="NoAccess" />
+            }
             <div class="main__table">
                 @RenderBody()
             </div>
@@ -61,7 +83,6 @@
                 var isValid = true;
                 var errorMessage = '';
 
-                // Проверяем поля name, surname, patronymic на длину не более 100 символов
                 $(this).find('input[name$="Name"], input[name$="Surname"], input[name$="Patronymic"]').each(function () {
                     if ($(this).val().length > 100) {
                         isValid = false;
@@ -69,7 +90,6 @@
                     }
                 });
 
-                // Проверяем поле description на длину не более 1000 символов
                 $(this).find('input[name$="Desc"], input[name$="Description"]').each(function () {
                     if ($(this).val().length > 1000) {
                         isValid = false;
@@ -79,7 +99,7 @@
 
                 if (!isValid) {
                     alert(errorMessage);
-                    e.preventDefault(); // Отменяет отправку формы
+                    e.preventDefault();
                 }
             });
         });

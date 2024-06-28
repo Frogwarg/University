@@ -1,4 +1,12 @@
-﻿@model University.Models.StudentsViewModel
+﻿@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+@model University.ViewModels.StudentsViewModel
+
+@{
+    var user = await UserManager.GetUserAsync(User);
+    var isAdmin = user != null ? await UserManager.IsInRoleAsync(user, "Admin") : false;
+}
+
 @if (Model.SelectedStudent != null)
 {
         Student student = Model.SelectedStudent;
@@ -59,7 +67,10 @@ else
         <td>Дата рождения</td>
         <td>Описание</td>
         <td>Группа</td>
-        <td colspan="2">Действия</td>
+        @if (isAdmin)
+        {
+            <td colspan="2">Действия</td>
+        }
         </thead>
         @if (Model.FilteredStudents != null && Model.FilteredStudents.Any())
         {
@@ -77,96 +88,101 @@ else
                     {
                         <td>Пусто</td>
                     }
-                    <td>
-                        <button type="button" class="update__button"
-                                data-id="@student.Id"
-                                data-name="@student.Name"
-                                data-surname="@student.Surname"
-                                data-patronymic="@student.Patronymic"
-                                data-dateofbirth="@student.DateOfBirth.ToString("o")"
-                                data-description="@student.Description"
-                                data-group="@(student.Group != null ? @student.Group.Id: (Model.Groups.Count>0 ? Model.Groups[0].Id : ""))">
-                            Изменить
-                        </button>
-                    </td>
-                    <td><a asp-action="DeleteStudent" asp-controller="Student" asp-route-StudentID="@student.Id">Удалить</a></td>
+                    @if (isAdmin)
+                    {
+                        <td>
+                            <button type="button" class="update__button"
+                                    data-id="@student.Id"
+                                    data-name="@student.Name"
+                                    data-surname="@student.Surname"
+                                    data-patronymic="@student.Patronymic"
+                                    data-dateofbirth="@student.DateOfBirth.ToString("o")"
+                                    data-description="@student.Description"
+                                    data-group="@(student.Group != null ? @student.Group.Id : (Model.Groups.Count > 0 ? Model.Groups[0].Id : ""))">
+                                Изменить
+                            </button>
+                        </td>
+                        <td><a asp-action="DeleteStudent" asp-controller="Student" asp-route-StudentID="@student.Id">Удалить</a></td>
+                    }
                 </tr>
             }
         }
         else
         {
-            <tfoot>
-            <td colspan="5">Результатов нет</td></tfoot>
+            <tfoot><td colspan="@(isAdmin?6:4)">Результатов нет</td></tfoot>
         }
     </table>
-    <div class="add__button_container">
-        <button type="button" id="add__button" class="add__button">+Добавить</button>
-    </div>
+    @if (isAdmin)
+    {
+        <div class="add__button_container">
+            <button type="button" id="add__button" class="add__button">+Добавить</button>
+        </div>
 
-    <div class="create__container" style="display: none;">
-        <form class="create__form" asp-action="CreateStudent" asp-controller="Student" method="post" enctype="multipart/form-data">
-            <p class="create__name">Имя: </p>
-            <input name="createName" placeholder="Имя..." required>
-            <p class="create__surname">Фамилия:</p>
-            <input name="createSurname" placeholder="Фамилия..." required>
-            <p class="create__patronymic">Отчество (если есть):</p>
-            <input name="createPatronymic" placeholder="Отчество...">
-            <p class="create__dateOfBirth">Дата рождения:</p>
-            <input type="date" id="createDateOfBirth" name="createDateOfBirth" placeholder="Дата рождения..." required>
-            <p class="create__description">Описание:</p>
-            <input name="createDesc" placeholder="Описание...">
-            <p class="create__photo">Фотография:</p>
-            <input type="file" name="createImage" placeholder="Фото...">
-            <p class="create__subjects">Группа:</p>
-            @if (Model.Groups.Count != 0)
-            {
-                <select name="crSelectedGroup" class="create__groups_container">
-                    @foreach (var group in Model.Groups)
-                    {
-                        <option value="@group.Id">@group.Name</option>
-                    }
-                </select>
-            }
-            else
-            {
-                <button type="button" class="create__group" onclick="location.href='@Url.Action("Groups", "Home")'">Создать группу</button>
-            }
-            <input class="create__btn" type="submit" value="Добавить студента">
-        </form>
-    </div>
+        <div class="create__container" style="display: none;">
+            <form class="create__form" asp-action="CreateStudent" asp-controller="Student" method="post" enctype="multipart/form-data">
+                <p class="create__name">Имя: </p>
+                <input name="createName" placeholder="Имя..." required>
+                <p class="create__surname">Фамилия:</p>
+                <input name="createSurname" placeholder="Фамилия..." required>
+                <p class="create__patronymic">Отчество (если есть):</p>
+                <input name="createPatronymic" placeholder="Отчество...">
+                <p class="create__dateOfBirth">Дата рождения:</p>
+                <input type="date" id="createDateOfBirth" name="createDateOfBirth" placeholder="Дата рождения..." required>
+                <p class="create__description">Описание:</p>
+                <input name="createDesc" placeholder="Описание...">
+                <p class="create__photo">Фотография:</p>
+                <input type="file" name="createImage" placeholder="Фото...">
+                <p class="create__subjects">Группа:</p>
+                @if (Model.Groups.Count != 0)
+                {
+                    <select name="crSelectedGroup" class="create__groups_container">
+                        @foreach (var group in Model.Groups)
+                        {
+                            <option value="@group.Id">@group.Name</option>
+                        }
+                    </select>
+                }
+                else
+                {
+                    <button type="button" class="create__group" onclick="location.href='@Url.Action("Groups", "Home")'">Создать группу</button>
+                }
+                <input class="create__btn" type="submit" value="Добавить студента">
+            </form>
+        </div>
 
-    <div class="update__container" style="display: none;">
-        <form class="update__form" asp-action="UpdateStudent" asp-controller="Student" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="updateId" id="updateStudentId" />
-            <p class="update__name">Имя: </p>
-            <input name="updateName" placeholder="Имя..." required>
-            <p class="update__surname">Фамилия:</p>
-            <input name="updateSurname" placeholder="Фамилия..." required>
-            <p class="update__patronymic">Отчество (если есть):</p>
-            <input name="updatePatronymic" placeholder="Отчество...">
-            <p class="update__dateOfBirth">Дата рождения:</p>
-            <input type="date" id="updateDateOfBirth" name="updateDateOfBirth" placeholder="Дата рождения..." required>
-            <p class="update__description">Описание:</p>
-            <input name="updateDesc" placeholder="Описание...">
-            <p class="update__photo">Фотография:</p>
-            <input type="file" name="currentImagePath" placeholder="Фото...">
-            <p class="update__subjects">Группа:</p>
-            @if (Model.Groups.Count != 0)
-            {
-                <select name="selectedGroup" class="create__groups_container">
-                    @foreach (var group in Model.Groups)
-                    {
-                        <option value="@group.Id">@group.Name</option>
-                    }
-                </select>
-            }
-            else
-            {
-                <button type="button" class="create__group" onclick="location.href='@Url.Action("Groups", "Home")'">Создать группу</button>
-            }
-            <input class="update__btn" type="submit" value="Обновить информацию">
-        </form>
-    </div>
+        <div class="update__container" style="display: none;">
+            <form class="update__form" asp-action="UpdateStudent" asp-controller="Student" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="updateId" id="updateStudentId" />
+                <p class="update__name">Имя: </p>
+                <input name="updateName" placeholder="Имя..." required>
+                <p class="update__surname">Фамилия:</p>
+                <input name="updateSurname" placeholder="Фамилия..." required>
+                <p class="update__patronymic">Отчество (если есть):</p>
+                <input name="updatePatronymic" placeholder="Отчество...">
+                <p class="update__dateOfBirth">Дата рождения:</p>
+                <input type="date" id="updateDateOfBirth" name="updateDateOfBirth" placeholder="Дата рождения..." required>
+                <p class="update__description">Описание:</p>
+                <input name="updateDesc" placeholder="Описание...">
+                <p class="update__photo">Фотография:</p>
+                <input type="file" name="currentImagePath" placeholder="Фото...">
+                <p class="update__subjects">Группа:</p>
+                @if (Model.Groups.Count != 0)
+                {
+                    <select name="selectedGroup" class="create__groups_container">
+                        @foreach (var group in Model.Groups)
+                        {
+                            <option value="@group.Id">@group.Name</option>
+                        }
+                    </select>
+                }
+                else
+                {
+                    <button type="button" class="create__group" onclick="location.href='@Url.Action("Groups", "Home")'">Создать группу</button>
+                }
+                <input class="update__btn" type="submit" value="Обновить информацию">
+            </form>
+        </div>
+    }
 }
 @section Scripts{
     <script>

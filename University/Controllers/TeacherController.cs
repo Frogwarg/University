@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using University.Models;
+using University.ViewModels;
 
 namespace University.Controllers
 {
