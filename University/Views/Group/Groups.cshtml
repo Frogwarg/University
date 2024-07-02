@@ -128,6 +128,7 @@
 
     <div class="update__container" style="display: none;">
         <form class="update__form" asp-action="UpdateGroup" asp-controller="Group" method="post">
+            <input type="hidden" name="originalName" value="" id="originalName">
             <input type="hidden" name="updateId" id="updateGroupId" />
             <p class="update__name">Наименование группы: </p>
             <input name="updateName" placeholder="Наименование..." required>
@@ -165,6 +166,7 @@
             else
             {
                 <button type="button" class="create__teacher" onclick="location.href='@Url.Action("Teachers", "Teacher")'">Добавить преподавателя</button>
+                <input class="update__btn" type="submit" value="Обновить информацию">
             }
         </form>
     </div>
@@ -180,10 +182,10 @@
                 var groupCourse = $(this).data('course');
                 var groupCurator = $(this).data('curator');
 
-                console.log(groupCurator);
                 $('#updateGroupId').val(groupId);
                 $('input[name="updateName"]').val(groupName);
                 $('input[name="updateDesc"]').val(groupDescription);
+                $('#originalName').val(groupName);
 
                 $('select[name="updateCourse"]').val(groupCourse);
                 // $('select[name="updateCurator"]').val(groupCurator);
@@ -206,6 +208,35 @@
                     $('.update__container').hide();
                     $('#add__button').text('+Добавить');
                 }
+            });
+            function verifyGroupName(form, nameField, originalNameField, event) {
+                var newName = form.find(`input[name="${nameField}"]`).val();
+                var originalName = form.find(`input[name="${originalNameField}"]`).val();
+
+                if (newName === originalName) {
+                    // Имя не изменилось, пропускаем проверку
+                    return;
+                }
+                $.ajax({
+                    url: '/Group/VerifyGroupName',
+                    type: 'GET',
+                    data: { createName: form.find(`input[name="${nameField}"]`).val() },
+                    async: false,
+                    success: function (result) {
+                        if (!result) {
+                            // Имя не уникально, предотвращаем отправку формы
+                            event.preventDefault();
+                            alert('Название группы должно быть уникальным.');
+                        }
+                    }
+                });
+            }
+            $('form.create__form').submit(function (event) {
+                verifyGroupName($(this), 'createName', null, event);
+            });
+
+            $('form.update__form').submit(function (event) {
+                verifyGroupName($(this), 'updateName', 'originalName', event);
             });
         });
     </script>

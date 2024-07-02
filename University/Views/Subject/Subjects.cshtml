@@ -60,6 +60,7 @@
 
     <div class="update__container" style="display: none;">
         <form class="update__form" asp-action="UpdateSubject" asp-controller="Subject" method="post">
+            <input type="hidden" name="originalName" value="" id="originalName">
             <input type="hidden" name="subjectId" id="updateSubjectId" />
             <p class="create__name">Название: </p>
             <input name="updateName" id="updateSubjectName" placeholder="Название...">
@@ -78,6 +79,7 @@
 
                 $('#updateSubjectId').val(subjectId);
                 $('#updateSubjectName').val(subjectName);
+                $('#originalName').val(subjectName);
 
                 $('#add__button').text('Закрыть');
                 if (!$('.update__container').is(':visible')) {
@@ -97,7 +99,14 @@
                     $('#add__button').text('+Добавить');
                 }
             });
-            function verifySubjectName(form, nameField, event) {
+            function verifySubjectName(form, nameField, originalNameField, event) {
+                var newName = form.find(`input[name="${nameField}"]`).val();
+                var originalName = form.find(`input[name="${originalNameField}"]`).val();
+
+                if (newName === originalName) {
+                    // Имя не изменилось, пропускаем проверку
+                    return;
+                }
                 $.ajax({
                     url: '/Subject/VerifySubjectName',
                     type: 'GET',
@@ -114,11 +123,11 @@
             }
 
             $('form.create__form').submit(function (event) {
-                verifySubjectName($(this), 'createName', event);
+                verifySubjectName($(this), 'createName', null, event);
             });
 
             $('form.update__form').submit(function (event) {
-                verifySubjectName($(this), 'updateName', event);
+                verifySubjectName($(this), 'updateName', 'originalName', event);
             });
         });
     </script>

@@ -79,5 +79,13 @@ namespace University.Controllers
             }
             return RedirectToAction("Courses");
         }
+
+
+        [HttpGet]
+        public IActionResult VerifyCourseName(string createName)
+        {
+            var isUnique = !db.Courses.Any(t => t.Name == createName);
+            return Json(isUnique);
+        }
     }
 }

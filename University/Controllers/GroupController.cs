@@ -113,5 +113,12 @@ namespace University.Controllers
             }
             return RedirectToAction("Groups");
         }
+
+        [HttpGet]
+        public IActionResult VerifyGroupName(string createName)
+        {
+            var isUnique = !db.Groups.Any(t => t.Name == createName);
+            return Json(isUnique);
+        }
     }
 }

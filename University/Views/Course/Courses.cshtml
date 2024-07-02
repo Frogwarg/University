@@ -64,6 +64,7 @@
 
     <div class="update__container" style="display: none;">
         <form class="update__form" asp-action="UpdateCourse" asp-controller="Course" method="post">
+            <input type="hidden" name="originalName" value="" id="originalName">
             <input type="hidden" name="updateId" id="updateCourseId" />
             <p class="update__name">Наименование курса: </p>
             <input name="updateName" placeholder="Наименование..." required>
@@ -85,6 +86,7 @@
                 $('#updateCourseId').val(courseId);
                 $('input[name="updateName"]').val(courseName);
                 $('input[name="updateDesc"]').val(courseDescription);
+                $('#originalName').val(courseName);
 
                 $('#add__button').text('Закрыть');
                 if (!$('.update__container').is(':visible')) {
@@ -103,6 +105,35 @@
                     $('.update__container').hide();
                     $('#add__button').text('+Добавить');
                 }
+            });
+            function verifyCourseName(form, nameField, originalNameField, event) {
+                var newName = form.find(`input[name="${nameField}"]`).val();
+                var originalName = form.find(`input[name="${originalNameField}"]`).val();
+
+                if (newName === originalName) {
+                    // Имя не изменилось, пропускаем проверку
+                    return;
+                }
+                $.ajax({
+                    url: '/Course/VerifyCourseName',
+                    type: 'GET',
+                    data: { createName: form.find(`input[name="${nameField}"]`).val() },
+                    async: false,
+                    success: function (result) {
+                        if (!result) {
+                            // Имя не уникально, предотвращаем отправку формы
+                            event.preventDefault();
+                            alert('Название курса должно быть уникальным.');
+                        }
+                    }
+                });
+            }
+            $('form.create__form').submit(function (event) {
+                verifyCourseName($(this), 'createName', null, event);
+            });
+
+            $('form.update__form').submit(function (event) {
+                verifyCourseName($(this), 'updateName', 'originalName', event);
             });
         });
     </script>
