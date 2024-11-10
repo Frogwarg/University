@@ -20,11 +20,12 @@ namespace University.Controllers
         public async Task<IActionResult> Groups(Guid? selectedCourse, string searchTerm)
         {
             var groups = await db.Groups.Include(g => g.Course).Include(g => g.Curator).ToListAsync();
+            var courses = await db.Courses.ToListAsync();
 
             var uniqueNames = new HashSet<string>();
             var uniqueCourses = new List<Course>();
 
-            foreach (var course in db.Courses)
+            foreach (var course in courses)
             {
                 if (uniqueNames.Add(course.Name))
                 {
@@ -54,7 +55,7 @@ namespace University.Controllers
                 SelectedCourse = selectedcourse,
                 SearchTerm = searchTerm,
                 FilteredGroups = filteredGroups,
-                Teachers = db.Teachers.ToList()
+                Teachers = await db.Teachers.ToListAsync()
             };
 
             ViewData["Title"] = "Groups List";
@@ -85,7 +86,6 @@ namespace University.Controllers
         public async Task<IActionResult> UpdateGroup(Guid updateId, string? updateName, Guid updateCourse, Guid updateCurator, string updateDesc = "")
         {
             var group = await db.Groups.Include(g => g.Course).Include(g => g.Curator).FirstOrDefaultAsync(t => t.Id == updateId);
-            Console.WriteLine("КУУУУУУУУУУУУУРРРРРРРРРРРРРРААААААААААТТТТТТТТТТООООООООООРРРРРР: "+updateCurator.ToString());
             if (group != null)
             {
                 group.Name = updateName;
@@ -115,9 +115,9 @@ namespace University.Controllers
         }
 
         [HttpGet]
-        public IActionResult VerifyGroupName(string createName)
+        public async Task<IActionResult> VerifyGroupNameAsync(string createName)
         {
-            var isUnique = !db.Groups.Any(t => t.Name == createName);
+            var isUnique = !await db.Groups.AnyAsync(t => t.Name == createName);
             return Json(isUnique);
         }
     }

@@ -82,9 +82,9 @@ namespace University.Controllers
 
 
         [HttpGet]
-        public IActionResult VerifyCourseName(string createName)
+        public async Task<IActionResult> VerifyCourseName(string createName)
         {
-            var isUnique = !db.Courses.Any(t => t.Name == createName);
+            var isUnique = !await db.Courses.AnyAsync(t => t.Name == createName);
             return Json(isUnique);
         }
     }

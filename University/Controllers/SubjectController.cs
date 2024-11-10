@@ -77,9 +77,9 @@ namespace University.Controllers
             return RedirectToAction("Subjects");
         }
         [HttpGet]
-        public IActionResult VerifySubjectName(string createName)
+        public async Task<IActionResult> VerifySubjectName(string createName)
         {
-            var isUnique = !db.Subjects.Any(t => t.Name == createName);
+            var isUnique = !await db.Subjects.AnyAsync(t => t.Name == createName);
             return Json(isUnique);
         }
 
