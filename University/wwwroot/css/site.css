@@ -63,6 +63,9 @@ header {
     height:200px;
     place-content:center;
 }
+.auth-error{
+    color:red;
+}
 
 main {
     min-height: 70vh;

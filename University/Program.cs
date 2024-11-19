@@ -15,7 +15,7 @@ builder.Logging.AddConsole(); // Логирование в консоль
 builder.Logging.SetMinimumLevel(LogLevel.Information);
 
 
-builder.Services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("CloudBase"),
+builder.Services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
     npgsqlOptions =>
     {
         npgsqlOptions.EnableRetryOnFailure(
@@ -50,7 +50,7 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var dbContext = services.GetRequiredService<ApplicationContext>();
-    //DataInitializer.Initialize(dbContext);
+    DataInitializer.Initialize(dbContext);
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
     await CreateRolesAndAdminAsync(roleManager, userManager, services);
@@ -86,73 +86,73 @@ async Task CreateRolesAndAdminAsync(RoleManager<IdentityRole> roleManager, UserM
 {
     try
     {
-        // Проверяем существование ролей перед созданием
-        if (!await roleManager.RoleExistsAsync("Admin"))
-        {
-            await roleManager.CreateAsync(new IdentityRole("Admin"));
-        }
-
-        // Проверяем существование администратора перед созданием
-        var adminEmail = "admin@example.com"; // Ваш email админа
-        var adminUser = await userManager.FindByEmailAsync(adminEmail);
-
-        if (adminUser == null)
-        {
-            var admin = new ApplicationUser
-            {
-                UserName = adminEmail,
-                Email = adminEmail,
-                EmailConfirmed = true
-            };
-
-            var result = await userManager.CreateAsync(admin, "YourPassword123!"); // Ваш пароль
-            if (result.Succeeded)
-            {
-                await userManager.AddToRoleAsync(admin, "Admin");
-            }
-        }
-        //logger.LogInformation("Начало создания ролей и администратора.");
-
-        //string[] roleNames = { "Admin", "User" };
-        //foreach (var roleName in roleNames)
+        //// Проверяем существование ролей перед созданием
+        //if (!await roleManager.RoleExistsAsync("Admin"))
         //{
-        //    var roleExists = await roleManager.RoleExistsAsync(roleName);
-        //    if (!roleExists)
-        //    {
-        //        logger.LogInformation($"Создание роли: {roleName}");
-        //        await roleManager.CreateAsync(new IdentityRole(roleName));
-        //    }
-        //    else
-        //    {
-        //        logger.LogInformation($"Роль {roleName} уже существует.");
-        //    }
+        //    await roleManager.CreateAsync(new IdentityRole("Admin"));
         //}
 
-        //var adminEmail = "admin@example.com";
+        //// Проверяем существование администратора перед созданием
+        //var adminEmail = "admin@example.com"; // Ваш email админа
         //var adminUser = await userManager.FindByEmailAsync(adminEmail);
+
         //if (adminUser == null)
         //{
-        //    logger.LogInformation("Создание учетной записи администратора.");
         //    var admin = new ApplicationUser
         //    {
         //        UserName = adminEmail,
-        //        Email = adminEmail
+        //        Email = adminEmail,
+        //        EmailConfirmed = true
         //    };
-        //    var createAdminResult = await userManager.CreateAsync(admin, "AdminPassword123!");
-        //    if (createAdminResult.Succeeded)
+
+        //    var result = await userManager.CreateAsync(admin, "AdminPassword123!"); // Ваш пароль
+        //    if (result.Succeeded)
         //    {
-        //        logger.LogInformation("Администратор успешно создан.");
         //        await userManager.AddToRoleAsync(admin, "Admin");
         //    }
-        //    else
-        //    {
-        //        logger.LogError("Не удалось создать администратора: " + string.Join(", ", createAdminResult.Errors.Select(e => e.Description)));
-        //    }
         //}
-        //else
-        //{
-        //    logger.LogInformation("Администратор уже существует.");
-        //}
+        logger.LogInformation("Начало создания ролей и администратора.");
+
+        string[] roleNames = { "Admin", "User" };
+        foreach (var roleName in roleNames)
+        {
+            var roleExists = await roleManager.RoleExistsAsync(roleName);
+            if (!roleExists)
+            {
+                logger.LogInformation($"Создание роли: {roleName}");
+                await roleManager.CreateAsync(new IdentityRole(roleName));
+            }
+            else
+            {
+                logger.LogInformation($"Роль {roleName} уже существует.");
+            }
+        }
+
+        var adminEmail = "admin@example.com";
+        var adminUser = await userManager.FindByEmailAsync(adminEmail);
+        if (adminUser == null)
+        {
+            logger.LogInformation("Создание учетной записи администратора.");
+            var admin = new ApplicationUser
+            {
+                UserName = adminEmail,
+                Email = adminEmail
+            };
+            var createAdminResult = await userManager.CreateAsync(admin, "AdminPassword123!");
+            if (createAdminResult.Succeeded)
+            {
+                logger.LogInformation("Администратор успешно создан.");
+                await userManager.AddToRoleAsync(admin, "Admin");
+            }
+            else
+            {
+                logger.LogError("Не удалось создать администратора: " + string.Join(", ", createAdminResult.Errors.Select(e => e.Description)));
+            }
+        }
+        else
+        {
+            logger.LogInformation("Администратор уже существует.");
+        }
     }
     catch (Exception ex)
     {

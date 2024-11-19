@@ -16,7 +16,6 @@ namespace University.Controllers
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _userManager = userManager;
             _emailSender = emailSender;
         }
         [HttpGet]
